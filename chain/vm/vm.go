@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/filecoin-project/lotus/chain/vm/ledger/Posting"
+	ledg "github.com/filecoin-project/lotus/chain/vm/ledger/ledg-types"
 	"reflect"
 	"sync/atomic"
 	"time"
@@ -44,6 +46,7 @@ const MaxCallDepth = 4096
 var (
 	log            = logging.Logger("vm")
 	actorLog       = logging.Logger("actors")
+
 	gasOnActorExec = newGasCharge("OnActorExec", 0, 0)
 )
 
@@ -216,6 +219,9 @@ type VM struct {
 	lbStateGet     LookbackStateGetter
 
 	Syscalls SyscallBuilder
+
+	Ledger *Posting.LedgerPosting
+
 }
 
 type VMOpts struct {
@@ -238,6 +244,13 @@ func NewVM(ctx context.Context, opts *VMOpts) (*VM, error) {
 		return nil, err
 	}
 
+	//if (ctx==nil){panic ("ctx is null before create ledger")
+	//}else {	panic("newVM create ledger")}
+
+	var Ledger  *Posting.LedgerPosting
+
+	if (ctx.Value("gl")!=nil){		Ledger= ctx.Value("gl").(*Posting.LedgerPosting)}
+
 	return &VM{
 		cstate:         state,
 		base:           opts.StateBase,
@@ -251,6 +264,8 @@ func NewVM(ctx context.Context, opts *VMOpts) (*VM, error) {
 		Syscalls:       opts.Syscalls,
 		baseFee:        opts.BaseFee,
 		lbStateGet:     opts.LookbackState,
+
+		Ledger: Ledger,
 	}, nil
 }
 
@@ -349,6 +364,8 @@ func (vm *VM) send(ctx context.Context, msg *types.Message, parent *Runtime,
 		return nil, nil
 	}()
 
+	vm.Ledger.EnqueuePosting(ctx, msg, ret,   rt.depth)
+
 	mr := types.MessageReceipt{
 		ExitCode: aerrors.RetCode(err),
 		Return:   ret,
@@ -387,10 +404,16 @@ func checkMessage(msg *types.Message) error {
 }
 
 func (vm *VM) ApplyImplicitMessage(ctx context.Context, msg *types.Message) (*ApplyRet, error) {
+
+	vm.Ledger.StartImplicitMessage(ctx,msg)
+
 	start := build.Clock.Now()
 	defer atomic.AddUint64(&StatApplied, 1)
 	ret, actorErr, rt := vm.send(ctx, msg, nil, nil, start)
 	rt.finilizeGasTracing()
+
+	vm.Ledger.FinalizeImplicitMessage(ctx,msg)
+
 	return &ApplyRet{
 		MessageReceipt: types.MessageReceipt{
 			ExitCode: aerrors.RetCode(actorErr),
@@ -406,7 +429,7 @@ func (vm *VM) ApplyImplicitMessage(ctx context.Context, msg *types.Message) (*Ap
 
 func (vm *VM) ApplyMessage(ctx context.Context, cmsg types.ChainMsg) (*ApplyRet, error) {
 	start := build.Clock.Now()
-	ctx, span := trace.StartSpan(ctx, "vm.ApplyMessage")
+	ctx, span := trace.StartSpan(ctx, "vm.StartMessage")
 	defer span.End()
 	defer atomic.AddUint64(&StatApplied, 1)
 	msg := cmsg.VMMessage()
@@ -518,6 +541,12 @@ func (vm *VM) ApplyMessage(ctx context.Context, cmsg types.ChainMsg) (*ApplyRet,
 		return nil, err
 	}
 
+
+	//stander
+	vm.Ledger.StartMessage(ctx,msg,false)
+
+
+
 	if err := st.Snapshot(ctx); err != nil {
 		return nil, xerrors.Errorf("snapshot failed: %w", err)
 	}
@@ -595,6 +624,20 @@ func (vm *VM) ApplyMessage(ctx context.Context, cmsg types.ChainMsg) (*ApplyRet,
 	if types.BigCmp(types.NewInt(0), gasHolder.Balance) != 0 {
 		return nil, xerrors.Errorf("gas handling math is wrong")
 	}
+
+
+	vm.Ledger.FinalizeMessage(ctx,msg,
+		&ledg.GasOutputs{
+			BaseFeeBurn:        gasOutputs.BaseFeeBurn,
+			OverEstimationBurn: gasOutputs.OverEstimationBurn,
+			MinerPenalty:       gasOutputs.MinerPenalty,
+			MinerTip:           gasOutputs.MinerTip,
+			Refund:             gasOutputs.Refund,
+			GasRefund:          gasOutputs.GasRefund,
+			GasBurned:          gasOutputs.GasBurned,
+			GasUsed:            gasUsed,
+	})
+
 
 	return &ApplyRet{
 		MessageReceipt: types.MessageReceipt{

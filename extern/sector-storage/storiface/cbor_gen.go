@@ -29,7 +29,7 @@ func (t *CallID) MarshalCBOR(w io.Writer) error {
 
 	// t.Sector (abi.SectorID) (struct)
 	if len("Sector") > cbg.MaxLength {
-		return xerrors.Errorf("Value in field \"Sector\" was too long")
+		return xerrors.Errorf("Amount in field \"Sector\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("Sector"))); err != nil {
@@ -45,7 +45,7 @@ func (t *CallID) MarshalCBOR(w io.Writer) error {
 
 	// t.ID (uuid.UUID) (array)
 	if len("ID") > cbg.MaxLength {
-		return xerrors.Errorf("Value in field \"ID\" was too long")
+		return xerrors.Errorf("Amount in field \"ID\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("ID"))); err != nil {

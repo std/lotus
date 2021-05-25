@@ -238,5 +238,6 @@ func (lw *LedgerWallet) Get() api.WalletAPI {
 var dsLedgerPrefix = "/ledgerkey/"
 
 func keyForAddr(addr address.Address) datastore.Key {
+
 	return datastore.NewKey(dsLedgerPrefix + addr.String())
 }

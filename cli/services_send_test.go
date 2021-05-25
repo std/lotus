@@ -39,7 +39,7 @@ func (cm contextMatcher) Matches(x interface{}) bool {
 }
 
 func (cm contextMatcher) String() string {
-	return fmt.Sprintf("Context with Value(%v/%T, %p)", markerKey, markerKey, cm.marker)
+	return fmt.Sprintf("Context with Amount(%v/%T, %p)", markerKey, markerKey, cm.marker)
 }
 
 func ContextWithMarker(ctx context.Context) (context.Context, gomock.Matcher) {

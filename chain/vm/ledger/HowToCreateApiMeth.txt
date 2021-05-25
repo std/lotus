@@ -1,0 +1,18 @@
+state api method
+add var cmd to cli/state.go
+add method to interface in api/api_full.go
+
+
+add func member to FullNodeStruct in api/apistruct/struct.go
+add func member to GatewayStruct in api/apistruct/struct.go
+
+add func (c *FullNodeStruct) methodName in api/apistruct/struct.go
+
+add implementation stub of methoName  in api/apistruct/struct.go
+for types
+GatewayStruct
+FullNodeStruct
+
+add real implementation  of methoName  in api/apistruct/struct.go
+for type
+*StateModul in node/impl/full/state.go

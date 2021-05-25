@@ -85,7 +85,7 @@ func (t *Entry) UnmarshalCBOR(r io.Reader) error {
 	if _, err := io.ReadFull(br, t.Key[:]); err != nil {
 		return err
 	}
-	// t.Value ([]uint8) (slice)
+	// t.Amount ([]uint8) (slice)
 
 	maj, extra, err = cbg.CborReadHeaderBuf(br, scratch)
 	if err != nil {

@@ -28,7 +28,7 @@ func (h *headBuffer) push(hc *api.HeadChange) (rethc *api.HeadChange) {
 		el := h.buffer.Front()
 		rethc, ok = el.Value.(*api.HeadChange)
 		if !ok {
-			panic("Value from list is not the correct type")
+			panic("Amount from list is not the correct type")
 		}
 
 		h.buffer.Remove(el)

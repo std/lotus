@@ -164,15 +164,15 @@ func (m *Message) ValidForBlockInclusion(minGas int64, version network.Version) 
 	}
 
 	if m.Value.Int == nil {
-		return xerrors.New("'Value' cannot be nil")
+		return xerrors.New("'Amount' cannot be nil")
 	}
 
 	if m.Value.LessThan(big.Zero()) {
-		return xerrors.New("'Value' field cannot be negative")
+		return xerrors.New("'Amount' field cannot be negative")
 	}
 
 	if m.Value.GreaterThan(TotalFilecoinInt) {
-		return xerrors.New("'Value' field cannot be greater than total filecoin supply")
+		return xerrors.New("'Amount' field cannot be greater than total filecoin supply")
 	}
 
 	if m.GasFeeCap.Int == nil {

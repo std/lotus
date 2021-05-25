@@ -663,7 +663,7 @@ func (t *Message) MarshalCBOR(w io.Writer) error {
 		return err
 	}
 
-	// t.Value (big.Int) (struct)
+	// t.Amount (big.Int) (struct)
 	if err := t.Value.MarshalCBOR(w); err != nil {
 		return err
 	}
@@ -774,12 +774,12 @@ func (t *Message) UnmarshalCBOR(r io.Reader) error {
 		t.Nonce = uint64(extra)
 
 	}
-	// t.Value (big.Int) (struct)
+	// t.Amount (big.Int) (struct)
 
 	{
 
 		if err := t.Value.UnmarshalCBOR(br); err != nil {
-			return xerrors.Errorf("unmarshaling t.Value: %w", err)
+			return xerrors.Errorf("unmarshaling t.Amount: %w", err)
 		}
 
 	}

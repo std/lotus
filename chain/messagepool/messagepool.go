@@ -271,7 +271,7 @@ func (ms *msgSet) add(m *types.SignedMessage, mp *MessagePool, strict, untrusted
 		}
 
 		ms.requiredFunds.Sub(ms.requiredFunds, exms.Message.RequiredFunds().Int)
-		//ms.requiredFunds.Sub(ms.requiredFunds, exms.Message.Value.Int)
+		//ms.requiredFunds.Sub(ms.requiredFunds, exms.Message.Amount.Int)
 	}
 
 	if !has && strict && len(ms.msgs) >= maxActorPendingMessages {
@@ -287,7 +287,7 @@ func (ms *msgSet) add(m *types.SignedMessage, mp *MessagePool, strict, untrusted
 	ms.nextNonce = nextNonce
 	ms.msgs[m.Message.Nonce] = m
 	ms.requiredFunds.Add(ms.requiredFunds, m.Message.RequiredFunds().Int)
-	//ms.requiredFunds.Add(ms.requiredFunds, m.Message.Value.Int)
+	//ms.requiredFunds.Add(ms.requiredFunds, m.Message.Amount.Int)
 
 	return !has, nil
 }
@@ -307,7 +307,7 @@ func (ms *msgSet) rm(nonce uint64, applied bool) {
 	}
 
 	ms.requiredFunds.Sub(ms.requiredFunds, m.Message.RequiredFunds().Int)
-	//ms.requiredFunds.Sub(ms.requiredFunds, m.Message.Value.Int)
+	//ms.requiredFunds.Sub(ms.requiredFunds, m.Message.Amount.Int)
 	delete(ms.msgs, nonce)
 
 	// adjust next nonce
@@ -333,7 +333,7 @@ func (ms *msgSet) getRequiredFunds(nonce uint64) types.BigInt {
 	m, has := ms.msgs[nonce]
 	if has {
 		requiredFunds.Sub(requiredFunds, m.Message.RequiredFunds().Int)
-		//requiredFunds.Sub(requiredFunds, m.Message.Value.Int)
+		//requiredFunds.Sub(requiredFunds, m.Message.Amount.Int)
 	}
 
 	return types.BigInt{Int: requiredFunds}
@@ -652,8 +652,8 @@ func (mp *MessagePool) checkBalance(m *types.SignedMessage, curTs *types.TipSet)
 		return xerrors.Errorf("not enough funds (required: %s, balance: %s): %w", types.FIL(requiredFunds), types.FIL(balance), ErrNotEnoughFunds)
 	}
 
-	// add Value for soft failure check
-	//requiredFunds = types.BigAdd(requiredFunds, m.Message.Value)
+	// add Amount for soft failure check
+	//requiredFunds = types.BigAdd(requiredFunds, m.Message.Amount)
 
 	mset, ok := mp.pending[m.Message.From]
 	if ok {

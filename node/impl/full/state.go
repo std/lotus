@@ -88,6 +88,7 @@ type StateAPI struct {
 }
 
 func (a *StateAPI) StateNetworkName(ctx context.Context) (dtypes.NetworkName, error) {
+
 	return stmgr.GetNetworkName(ctx, a.StateManager, a.Chain.GetHeaviestTipSet().ParentState())
 }
 
@@ -452,6 +453,7 @@ func (m *StateModule) StateAccountKey(ctx context.Context, addr address.Address,
 }
 
 func (a *StateAPI) StateReadState(ctx context.Context, actor address.Address, tsk types.TipSetKey) (*api.ActorState, error) {
+	panic("ReadState")
 	ts, err := a.Chain.GetTipSetFromKey(tsk)
 	if err != nil {
 		return nil, xerrors.Errorf("loading tipset %s: %w", tsk, err)
@@ -811,7 +813,8 @@ func (a *StateAPI) StateSectorPartition(ctx context.Context, maddr address.Addre
 	return mas.FindSector(sectorNumber)
 }
 
-func (a *StateAPI) StateListMessages(ctx context.Context, match *api.MessageMatch, tsk types.TipSetKey, toheight abi.ChainEpoch) ([]cid.Cid, error) {
+func (a *StateAPI) StateListMessages_orig(ctx context.Context, match *api.MessageMatch, tsk types.TipSetKey, toheight abi.ChainEpoch) ([]cid.Cid, error) {
+
 	ts, err := a.Chain.GetTipSetFromKey(tsk)
 	if err != nil {
 		return nil, xerrors.Errorf("loading tipset %s: %w", tsk, err)
@@ -1372,6 +1375,7 @@ func stateVMCirculatingSupplyInternal(
 }
 
 func (m *StateModule) StateNetworkVersion(ctx context.Context, tsk types.TipSetKey) (network.Version, error) {
+
 	ts, err := m.Chain.GetTipSetFromKey(tsk)
 	if err != nil {
 		return network.VersionMax, xerrors.Errorf("loading tipset %s: %w", tsk, err)

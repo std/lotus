@@ -124,7 +124,7 @@ func printMessage(cctx *cli.Context, msg *types.Message) error {
 
 	fmt.Println("---")
 	color.Green("Message Details:")
-	fmt.Println("Value:", types.FIL(msg.Value))
+	fmt.Println("Amount:", types.FIL(msg.Value))
 	fmt.Println("Max Fees:", types.FIL(msg.RequiredFunds()))
 	fmt.Println("Max Total Cost:", types.FIL(big.Add(msg.RequiredFunds(), msg.Value)))
 

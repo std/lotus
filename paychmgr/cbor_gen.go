@@ -31,7 +31,7 @@ func (t *VoucherInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.Voucher (paych.SignedVoucher) (struct)
 	if len("Voucher") > cbg.MaxLength {
-		return xerrors.Errorf("Value in field \"Voucher\" was too long")
+		return xerrors.Errorf("Amount in field \"Voucher\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("Voucher"))); err != nil {
@@ -47,7 +47,7 @@ func (t *VoucherInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.Proof ([]uint8) (slice)
 	if len("Proof") > cbg.MaxLength {
-		return xerrors.Errorf("Value in field \"Proof\" was too long")
+		return xerrors.Errorf("Amount in field \"Proof\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("Proof"))); err != nil {
@@ -71,7 +71,7 @@ func (t *VoucherInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.Submitted (bool) (bool)
 	if len("Submitted") > cbg.MaxLength {
-		return xerrors.Errorf("Value in field \"Submitted\" was too long")
+		return xerrors.Errorf("Amount in field \"Submitted\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("Submitted"))); err != nil {
@@ -202,7 +202,7 @@ func (t *ChannelInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.ChannelID (string) (string)
 	if len("ChannelID") > cbg.MaxLength {
-		return xerrors.Errorf("Value in field \"ChannelID\" was too long")
+		return xerrors.Errorf("Amount in field \"ChannelID\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("ChannelID"))); err != nil {
@@ -213,7 +213,7 @@ func (t *ChannelInfo) MarshalCBOR(w io.Writer) error {
 	}
 
 	if len(t.ChannelID) > cbg.MaxLength {
-		return xerrors.Errorf("Value in field t.ChannelID was too long")
+		return xerrors.Errorf("Amount in field t.ChannelID was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len(t.ChannelID))); err != nil {
@@ -225,7 +225,7 @@ func (t *ChannelInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.Channel (address.Address) (struct)
 	if len("Channel") > cbg.MaxLength {
-		return xerrors.Errorf("Value in field \"Channel\" was too long")
+		return xerrors.Errorf("Amount in field \"Channel\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("Channel"))); err != nil {
@@ -241,7 +241,7 @@ func (t *ChannelInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.Control (address.Address) (struct)
 	if len("Control") > cbg.MaxLength {
-		return xerrors.Errorf("Value in field \"Control\" was too long")
+		return xerrors.Errorf("Amount in field \"Control\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("Control"))); err != nil {
@@ -257,7 +257,7 @@ func (t *ChannelInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.Target (address.Address) (struct)
 	if len("Target") > cbg.MaxLength {
-		return xerrors.Errorf("Value in field \"Target\" was too long")
+		return xerrors.Errorf("Amount in field \"Target\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("Target"))); err != nil {
@@ -273,7 +273,7 @@ func (t *ChannelInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.Direction (uint64) (uint64)
 	if len("Direction") > cbg.MaxLength {
-		return xerrors.Errorf("Value in field \"Direction\" was too long")
+		return xerrors.Errorf("Amount in field \"Direction\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("Direction"))); err != nil {
@@ -289,7 +289,7 @@ func (t *ChannelInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.Vouchers ([]*paychmgr.VoucherInfo) (slice)
 	if len("Vouchers") > cbg.MaxLength {
-		return xerrors.Errorf("Value in field \"Vouchers\" was too long")
+		return xerrors.Errorf("Amount in field \"Vouchers\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("Vouchers"))); err != nil {
@@ -314,7 +314,7 @@ func (t *ChannelInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.NextLane (uint64) (uint64)
 	if len("NextLane") > cbg.MaxLength {
-		return xerrors.Errorf("Value in field \"NextLane\" was too long")
+		return xerrors.Errorf("Amount in field \"NextLane\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("NextLane"))); err != nil {
@@ -330,7 +330,7 @@ func (t *ChannelInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.Amount (big.Int) (struct)
 	if len("Amount") > cbg.MaxLength {
-		return xerrors.Errorf("Value in field \"Amount\" was too long")
+		return xerrors.Errorf("Amount in field \"Amount\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("Amount"))); err != nil {
@@ -346,7 +346,7 @@ func (t *ChannelInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.PendingAmount (big.Int) (struct)
 	if len("PendingAmount") > cbg.MaxLength {
-		return xerrors.Errorf("Value in field \"PendingAmount\" was too long")
+		return xerrors.Errorf("Amount in field \"PendingAmount\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("PendingAmount"))); err != nil {
@@ -362,7 +362,7 @@ func (t *ChannelInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.CreateMsg (cid.Cid) (struct)
 	if len("CreateMsg") > cbg.MaxLength {
-		return xerrors.Errorf("Value in field \"CreateMsg\" was too long")
+		return xerrors.Errorf("Amount in field \"CreateMsg\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("CreateMsg"))); err != nil {
@@ -384,7 +384,7 @@ func (t *ChannelInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.AddFundsMsg (cid.Cid) (struct)
 	if len("AddFundsMsg") > cbg.MaxLength {
-		return xerrors.Errorf("Value in field \"AddFundsMsg\" was too long")
+		return xerrors.Errorf("Amount in field \"AddFundsMsg\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("AddFundsMsg"))); err != nil {
@@ -406,7 +406,7 @@ func (t *ChannelInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.Settling (bool) (bool)
 	if len("Settling") > cbg.MaxLength {
-		return xerrors.Errorf("Value in field \"Settling\" was too long")
+		return xerrors.Errorf("Amount in field \"Settling\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("Settling"))); err != nil {
@@ -672,7 +672,7 @@ func (t *MsgInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.ChannelID (string) (string)
 	if len("ChannelID") > cbg.MaxLength {
-		return xerrors.Errorf("Value in field \"ChannelID\" was too long")
+		return xerrors.Errorf("Amount in field \"ChannelID\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("ChannelID"))); err != nil {
@@ -683,7 +683,7 @@ func (t *MsgInfo) MarshalCBOR(w io.Writer) error {
 	}
 
 	if len(t.ChannelID) > cbg.MaxLength {
-		return xerrors.Errorf("Value in field t.ChannelID was too long")
+		return xerrors.Errorf("Amount in field t.ChannelID was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len(t.ChannelID))); err != nil {
@@ -695,7 +695,7 @@ func (t *MsgInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.MsgCid (cid.Cid) (struct)
 	if len("MsgCid") > cbg.MaxLength {
-		return xerrors.Errorf("Value in field \"MsgCid\" was too long")
+		return xerrors.Errorf("Amount in field \"MsgCid\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("MsgCid"))); err != nil {
@@ -711,7 +711,7 @@ func (t *MsgInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.Received (bool) (bool)
 	if len("Received") > cbg.MaxLength {
-		return xerrors.Errorf("Value in field \"Received\" was too long")
+		return xerrors.Errorf("Amount in field \"Received\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("Received"))); err != nil {
@@ -727,7 +727,7 @@ func (t *MsgInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.Err (string) (string)
 	if len("Err") > cbg.MaxLength {
-		return xerrors.Errorf("Value in field \"Err\" was too long")
+		return xerrors.Errorf("Amount in field \"Err\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("Err"))); err != nil {
@@ -738,7 +738,7 @@ func (t *MsgInfo) MarshalCBOR(w io.Writer) error {
 	}
 
 	if len(t.Err) > cbg.MaxLength {
-		return xerrors.Errorf("Value in field t.Err was too long")
+		return xerrors.Errorf("Amount in field t.Err was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len(t.Err))); err != nil {

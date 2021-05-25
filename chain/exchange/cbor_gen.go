@@ -157,7 +157,7 @@ func (t *Response) MarshalCBOR(w io.Writer) error {
 
 	// t.ErrorMessage (string) (string)
 	if len(t.ErrorMessage) > cbg.MaxLength {
-		return xerrors.Errorf("Value in field t.ErrorMessage was too long")
+		return xerrors.Errorf("Amount in field t.ErrorMessage was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len(t.ErrorMessage))); err != nil {

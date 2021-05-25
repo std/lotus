@@ -93,7 +93,7 @@ Genesis: {
 	Accounts: [ # non-miner, non-singleton actors, max len = MaxAccounts
 		{
 			Type: "account" / "multisig",
-			Value: "attofil",
+			Amount: "attofil",
 			[Meta: {msig settings, account key..}]
 		},...
 	],

@@ -75,6 +75,9 @@ debug: build-devnets
 calibnet: GOFLAGS+=-tags=calibnet
 calibnet: build-devnets
 
+calib: GOFLAGS+=-tags=calibnet
+calib: lotus
+
 nerpanet: GOFLAGS+=-tags=nerpanet
 nerpanet: build-devnets
 
