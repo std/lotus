@@ -17,9 +17,7 @@ func (l *MarketLedger) GetPublishStorageDealsReturn(b []byte) (ledg.PublishStora
 	err:=ret.UnmarshalCBOR(bytes.NewReader(b))
 	return ret,err
 }
-//from DealProposal with DealId
-type DealStatus int
-type MarketEntryType int
+
 
 type MarketState struct {
 	Proposals cid.Cid // AMT[DealID]DealProposal
@@ -50,13 +48,8 @@ type MarketState struct {
 	// Total storage fee that is locked in escrow -> unlocked when payments are made
 	TotalClientStorageFee abi.TokenAmount
 
-
 	///////////////////////////////////////
-
-
 }
-
-
 
 type MarketBalanceEntry struct {
 	ProviderCollateral abi.TokenAmount
@@ -195,7 +188,7 @@ type MarketLedgerEntry struct {
 	DealId     abi.DealID
 
 	Epoch     abi.ChainEpoch
-	EntryType MarketEntryType
+	EntryType ledg.MarketEntryType
 //	Nonce     uint64
 	Method    string
 

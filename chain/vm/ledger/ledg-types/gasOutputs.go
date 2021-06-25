@@ -13,6 +13,9 @@ type GasOutputs struct {
 	GasRefund int64
 	GasBurned int64
 	GasUsed   int64
+
+
+	GasCost abi.TokenAmount
 }
 
 

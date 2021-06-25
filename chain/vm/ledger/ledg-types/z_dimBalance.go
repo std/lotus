@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-type DimBalance map[int]FilAmount
+type DimBalance map[int16]FilAmount
 
 func  Sub(op1_, op2_ FilAmount) FilAmount{
 
@@ -18,7 +18,7 @@ func  Sub(op1_, op2_ FilAmount) FilAmount{
 	return FilAmount{ret}
 }
 const  (
-	Available int = iota
+	Available int16 = iota
 	PreCommitDeposits
 	InitialPledge
 	LockedFunds
@@ -36,7 +36,7 @@ func  Sub_orig(op1, op2 big.Int) big.Int{
 func (d DimBalance) MarshalBSON() ([]byte, error) {
 	//fmt.Printf("Marshal dim balance1 %v",d)
 	m:=bson.M{}
-	for i,v:=range d {m[strconv.Itoa(i)]=v.String()}
+	for i,v:=range d {m[strconv.Itoa(int(i))]=v.String()}
 	return bson.Marshal(m)
 }
 
@@ -83,9 +83,9 @@ func  DimBalanceFromBsonM(data interface{}) (DimBalance,error) {
 				if err != nil {
 					return nil, err
 				}
-				d[i] = FilAmount(amo)
+				d[int16(i)] = FilAmount(amo)
 			} else {
-				d[i] = FilAmount{}
+				d[int16(i)] = FilAmount{}
 			}
 		}
 		return d, nil

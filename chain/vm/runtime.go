@@ -5,6 +5,9 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
+	ledg_util "github.com/filecoin-project/lotus/chain/vm/ledger/ledg-util"
+	"github.com/filecoin-project/specs-actors/v3/actors/builtin/miner"
+	actorlog "github.com/std/actor-log"
 	gruntime "runtime"
 	"time"
 
@@ -438,6 +441,7 @@ func (rt *Runtime) StateReadonly(obj cbor.Unmarshaler) {
 	if err != nil {
 		rt.Abortf(exitcode.SysErrorIllegalArgument, "failed to get actor for Readonly state: %s", err)
 	}
+
 	rt.StoreGet(act.Head, obj)
 }
 
@@ -452,6 +456,12 @@ func (rt *Runtime) StateTransaction(obj cbor.Er, f func()) {
 	}
 	baseState := act.Head
 	rt.StoreGet(baseState, obj)
+
+	if rt.vm.Ledger!=nil && rt.vm.Ledger.Stinfo!=nil && rt.vm.Ledger.CurrentTxId==130069000000{
+
+			//ledg_util.Llogf("StoreGetObj state %s ",baseState )
+			//rt.vm.Ledger.Stinfo.SetState(rt.ctx)
+	}
 
 	rt.allowInternal = false
 	f()
@@ -598,7 +608,11 @@ func (rt *Runtime) abortIfAlreadyValidated() {
 	rt.callerValidated = true
 }
 
+//const ActorStateLog rtt.LogLevel = 10
+
 func (rt *Runtime) Log(level rtt.LogLevel, msg string, args ...interface{}) {
+
+
 	switch level {
 	case rtt.DEBUG:
 		actorLog.Debugf(msg, args...)
@@ -608,5 +622,28 @@ func (rt *Runtime) Log(level rtt.LogLevel, msg string, args ...interface{}) {
 		actorLog.Warnf(msg, args...)
 	case rtt.ERROR:
 		actorLog.Errorf(msg, args...)
+
+	case actorlog.ActorEvent:
+		switch args[0] {
+		case actorlog.Vested:
+			break
+			//if amountString,ok:=args[2].(abi.TokenAmount);ok{
+			//	ledg_util.Llogf("Got msg from actor %s amount %s",msg,amountString.String())
+			//}else {
+			//	ledg_util.Llogf("Got msg from actor %s amount %s",msg,"Convert failed")
+			//}
+		case actorlog.PrecommitedSectorsExpired:
+			sectors:=args[1].([]*miner.SectorPreCommitOnChainInfo)
+			for _,s:=range sectors {
+				ledg_util.Llogf("Expired sector %s amount %s",s.Info.SectorNumber.String(),s.PreCommitDeposit.String())
+			}
+		case actorlog.ProveCommitSector:
+			ledg_util.Llogf("ProveCommitSector")
+			sectors:=args[1].([]*miner.SectorOnChainInfo)
+			for _,s:=range sectors {
+				ledg_util.Llogf("Proved sector %s amount %s",s.SectorNumber.String(),s.InitialPledge.String())
+			}
+		}
 	}
+
 }

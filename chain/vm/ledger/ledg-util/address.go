@@ -4,11 +4,10 @@ import (
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/lotus/chain/vm/ledger/models"
-	logging "github.com/ipfs/go-log/v2"
 	"strconv"
 )
 
-var llog			= logging.Logger("gledger")
+
 var AddressCache map[string]int32
 
 func loadAddressCache(){

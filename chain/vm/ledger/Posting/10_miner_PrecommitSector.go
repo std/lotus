@@ -1,7 +1,9 @@
 package Posting
 
 import (
+	"context"
 	"github.com/filecoin-project/go-address"
+	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/go-state-types/big"
 	ledg "github.com/filecoin-project/lotus/chain/vm/ledger/ledg-types"
 	ledg_util "github.com/filecoin-project/lotus/chain/vm/ledger/ledg-util"
@@ -16,6 +18,12 @@ func(l *LedgerPosting) PreCommitSector(p ledg_util.ActorMethodParams) {
 	params,_:=ledg.UnmarshalSectorPreCommitInfo(msg.Params)
 	minerAddress:=msg.To
 	minerId,_:=address.IDFromAddress(minerAddress)
+
+
+	l.MinerId=int32(minerId)
+
+	secId:=int32(params.SectorNumber)
+	l.SectorId=&secId
 
 	//_sectorPreCommitInfoCid,_:=abi.CidBuilder.Sum(Msg.Params)
 	//sectorPreCommitInfoCid:=ledg.Cid{_sectorPreCommitInfoCid}
@@ -54,7 +62,7 @@ func(l *LedgerPosting) PreCommitSector(p ledg_util.ActorMethodParams) {
 		//SectorPreCommitInfo: params,
 	}
 
-	l.insert(s,true)
+	l.insert(s,false)
 
 	se:=&m.PowerEntry{
 		MinerId:         s.MinerId,
@@ -71,17 +79,53 @@ func(l *LedgerPosting) PreCommitSector(p ledg_util.ActorMethodParams) {
 	}
 	l.insert(se,true)
 
-	e:=l.minerEntryTemplate(p,int32(len(l.minerEntries)),false)
 
-	e.SectorId=&s.ID
-	e.MinerId=s.MinerId
-	e.TxId=l.CurrentTxId
-	l.insert(&e,true)
-
+// initial entry
 	e2:=l.minerEntryTemplate(p,int32(len(l.minerEntries)),true)
 
 	e2.SectorId=&s.ID
 	e2.MinerId=s.MinerId
 	e2.TxId=l.CurrentTxId
-	l.insert(&e2,true)
+	l.insert(e2,false)
+
+
+//precommit entry
+	e:=l.minerEntryTemplate(p,int32(len(l.minerEntries)),false)
+
+	e.SectorId=&s.ID
+	e.MinerId=s.MinerId
+	e.TxId=l.CurrentTxId
+
+	e.Amount=ledg.FilAmount(msg.Value)
+	l.insert(e,false)
+
+// lock Precommit Deposit
+	//precommit entry
+	e_lock:=l.minerEntryTemplate(p,int32(len(l.minerEntries)),false)
+
+	e_lock.SectorId=&s.ID
+	e_lock.MinerId=s.MinerId
+	e_lock.TxId=l.CurrentTxId
+
+	e_lock.AddressId=s.MinerId
+	e_lock.OffsetId=s.MinerId
+	e_lock.DimensionId=ledg.PreCommitDeposits
+
+	secInfo,_:=l.Stinfo.GetSectorPreCommitOnChainInfo(context.TODO(),minerAddress,abi.SectorNumber(s.ID))
+	deposit:=secInfo.PreCommitDeposit
+	//deposit:=abi.NewTokenAmount(112)
+	e_lock.Amount=ledg.FilAmount(deposit)
+	e_lock.MethodName="inferred"
+	e_lock.EntryType="Lock precommit deposit"
+
+	l.insert(e_lock,false)
+
+	e_lock.Id++
+
+	e_lock.EntryType="Transfer precommit deposit"
+	e_lock.Amount=ledg.FilAmount(big.NewFromGo(deposit.Int).Neg())
+	e_lock.DimensionId=ledg.Available
+	l.insert(e_lock,false)
+
+
 }

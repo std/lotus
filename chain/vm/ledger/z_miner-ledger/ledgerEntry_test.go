@@ -1,4 +1,4 @@
-package miner_ledger
+package z_miner_ledger
 
 //func TestLedgerEntry(t *testing.T){
 //

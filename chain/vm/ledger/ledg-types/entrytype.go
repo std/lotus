@@ -46,3 +46,10 @@ var MinerEntryType=struct {
 	ProveCommit:              CommitSector,
 	Terminate: 				  TerminateSector,
 }
+
+type OpeningOrClosing bool
+const (
+	Closing OpeningOrClosing = false
+	Opening                  = true
+)
+

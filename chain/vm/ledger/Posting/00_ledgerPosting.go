@@ -6,13 +6,14 @@ import (
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/go-state-types/big"
+	"github.com/filecoin-project/lotus/chain/actors/adt"
 	"github.com/filecoin-project/lotus/chain/state"
 	"github.com/filecoin-project/lotus/chain/types"
 	"github.com/filecoin-project/lotus/chain/vm/ledger"
 	ledg "github.com/filecoin-project/lotus/chain/vm/ledger/ledg-types"
 	ledg_util "github.com/filecoin-project/lotus/chain/vm/ledger/ledg-util"
-	miner_ledger "github.com/filecoin-project/lotus/chain/vm/ledger/miner-ledger"
 	"github.com/filecoin-project/lotus/chain/vm/ledger/models"
+	"github.com/filecoin-project/lotus/chain/vm/ledger/stateTransition"
 	"github.com/ipfs/go-cid"
 	cbor "github.com/ipfs/go-ipld-cbor"
 	logging "github.com/ipfs/go-log/v2"
@@ -21,47 +22,65 @@ import (
 )
 
 
-
-
 type LedgerPosting struct {
-	//vm           *vm.VM
+
+	Stinfo      *stateTransition.StateTrans
 	CurrentTxId int
-	OriginMsg  *types.Message
-//	CurrentMsg *types.Message
-	st         *state.StateTree
-	cst        *cbor.BasicIpldStore
+	SectorId     *int32
+	MinerId 	 int32
 
-	Epoch   abi.ChainEpoch
-	//gasOutputs miner_ledger.GasOutputs
+	ts          *types.TipSet
+	OriginMsg   *types.Message
+	StateTree *state.StateTree
+	cst       *cbor.BasicIpldStore
 
-	*miner_ledger.MinerLedger
+	Epoch abi.ChainEpoch
+
+	//*miner_ledger.MinerLedger
 	MarketLedger
-	//*PowerLedger
-	//RewardLedger
 
-	messages []*models.TxMessage
-	minerEntries map[int32]*models.LedgerEntry
-	powerEntries map[int]*models.PowerEntry
-	sectors  map[int]*models.Sector
+	messages      []*models.TxMessage
+	minerEntries  map[int]models.LedgerEntry
+	powerEntries  map[int]*models.PowerEntry
+	sectors       map[int]*models.Sector
 	rewardEntries map[int]*models.RewardEntry
 
 
-	SectorId int32
 	PostingStack ledg_util.Stack
+	adtStore     adt.Store
+	//nextts       *types.TipSet
 }
 func (l *LedgerPosting) db(	) *gorm.DB{
 	return ledg_util.GetPgDatabase()
 }
 
 func (l *LedgerPosting) dbInsert(v interface{},checkExistance bool) {
-	if checkExistance {
-		l.db().FirstOrCreate(v)
+	if checkExistance {		l.db().FirstOrCreate(v)
 	}else {
-		l.db().Create(v)	}
+		_=l.db().Create(v)
+
+		//val,ok:=v.(*models.LedgerEntry)
+		//
+		//if ok && val.TxId==130069000000{
+		//	ledg_util.Llogf("insert entry %s",val.String())
+		//}
+	}
+}
+func (l *LedgerPosting) flush() {
+
+	balance:=big.NewInt(0)
+
+	for _,e:=range l.minerEntries {
+		if l.CurrentTxId!=e.TxId {continue}
+		balance=big.Add(abi.TokenAmount(e.Amount),balance)
+		//ledg_util.Llogf("e.txId %d, id %d, amount %s, balance %s",e.TxId,e.Id,e.Amount, balance.String())
+		l.dbInsert(&e,false)
+	}
+
+	ledg_util.Llogf("%d : balance inv %s",l.CurrentTxId,balance.String())
 }
 
 func (l *LedgerPosting) insert(v interface{},checkExistance bool) {
-	//if ledg_util.Exists(v,int(id)) {return }
 
 	switch t := v.(type) {
 
@@ -74,18 +93,24 @@ func (l *LedgerPosting) insert(v interface{},checkExistance bool) {
 	case *models.Sector:
 		l.dbInsert(t, checkExistance)
 
-
 	case *models.TxMessage:
 		l.dbInsert(t, checkExistance)
 		l.messages=append(l.messages,t)
 
 	case *models.PowerEntry:
 		l.dbInsert(t,checkExistance)
-	case *models.LedgerEntry:
-		l.minerEntries[t.Id] = t
-		l.dbInsert(t,checkExistance)
 
+	//case *models.LedgerEntry:
+	//	l.minerEntries[t.Id] = t
+	//	l.dbInsert(t,checkExistance)
+	case models.VestingEntry:
+	case *models.VestingEntry:
+		break
+		//l.dbInsert(t,checkExistance)
 
+	case models.LedgerEntry:
+		l.minerEntries[int(t.Id)] = t
+		//l.dbInsert(&t,checkExistance)
 		//l.minerEntries[e.Id]=e
 	case *models.StorageDealEntry:
 		l.dbInsert(t,checkExistance)
@@ -93,7 +118,6 @@ func (l *LedgerPosting) insert(v interface{},checkExistance bool) {
 		l.dbInsert(t,checkExistance)
 	default:
 		llog.Info("unexpected type %T", t, " of ", v)
-
 	}
 }
 
@@ -102,77 +126,97 @@ var llog			= logging.Logger("gledger")
 
 
 
-//func (l *LedgerPosting) OnStartMessage(ctx context.Context,Msg *types.Message){
-//
-//
-//
-//	addr:=Msg.To
-//	switch ledg_util.GetActorType(addr) {
-//
-//	case "account":
-//
-//	case"init"://f01
-//
-//	case "reward"://f02
-//
-//	case "cron"://f03
-//
-//	case "power"://f04
-//
-//	case "market"://f05
-//
-//	case "registry"://f06
-//
-//	case "burnt":
-//	case "paych":
-//
-//	case "miner":
-//		l.MinerLedger=&miner_ledger.MinerLedger{
-//			MinerAddress: address.Address{},
-//			//Entries:      nil,
-//			Opening:      nil,
-//			Closing:      nil,
-//			BalancesDiff: nil,
-//		}
-//
-//	}
-//}
-
-func (l *LedgerPosting) insertMinerEntrySend_del(p ledg_util.ActorMethodParams){
-	//e:=l.minerEntrySendTemplate(p,0)
-	e:=l.minerEntryTemplate(p,0,false)
-	e.MethodName=e.MethodName+"#Send"
-	amount:=ledg.FilAmount(big.NewFromGo(p.Msg.Value.Int).Neg())
-
-	addressId,_:=ledg_util.GetOrCreateAccountFromAddress(p.Msg.From,"",l.Epoch)
-	offsetId,_:=ledg_util.GetOrCreateAccountFromAddress(p.Msg.To,"",l.Epoch)
-	e.AddressId=int32(addressId)
-	e.OffsetId=int32(offsetId)
-
-	e.Amount =amount
-	l.insert(&e,true)
-}
-
 func (l *LedgerPosting) insertGasEntry(msg *types.Message, outp *ledg.GasOutputs) {
 
+	callerAddressId,_:=ledg_util.GetOrCreateAccountFromAddress(msg.From,"",l.Epoch)
+
+	//ledg_util.Llogf("AddressMongo from %s , %d",msg.From.String(),callerAddressId)
+	gasHolderId:=int32(999)
+	BurntId:=int32(99)
+	RewardId:=int32(2)
 	e:=l.minerEntryTemplate(ledg_util.ActorMethodParams{
 		Msg:   msg,
 		Ret:   nil,
 		Depth: 0,
 	},0	,false)
+	e.SectorId=l.SectorId
+	e.MinerId=l.MinerId
 
-	e.Amount=ledg.FilAmount{big.NewInt(0).SetInt64(outp.GasBurned)}
-	//addressId,_:=address.IDFromAddress(msg.From)
-	offsetId,_:=address.IDFromAddress(msg.From)
-	e.AddressId=int32(99)
-	e.OffsetId=int32(offsetId)
-	e.Method=99
-	e.MethodName="GasBurnt"
-	e.EntryType="GasBurnt"
-	l.insert(&e,true)
+	gasSent:=ledg.FilAmount(big.Sum(outp.BaseFeeBurn,outp.OverEstimationBurn))
 
-	}
-func (l *LedgerPosting) StartMessage(ctx context.Context,msg *types.Message,implicit bool) {
+	e.Amount=gasSent.Neg()
+
+	e.AddressId=callerAddressId
+	e.OffsetId= gasHolderId
+	e.MethodId=99
+	e.MethodName="gasSent"
+	e.EntryType="GasSent"
+
+
+	l.insert(e,false)
+
+
+
+
+	e.Id++
+	e.Amount=ledg.FilAmount(outp.BaseFeeBurn)
+
+	e.AddressId=BurntId
+	e.OffsetId=gasHolderId
+	e.MethodId=999
+	e.MethodName="inferred"
+	e.EntryType="BaseFeeBurn"
+	l.insert(e,false)
+	//
+
+	//////////////////////////
+	e.Id++
+	e.Amount=ledg.FilAmount(outp.OverEstimationBurn)
+
+	e.AddressId=BurntId
+	e.OffsetId=gasHolderId
+	e.MethodId=999
+	e.MethodName="inferred"
+	e.EntryType="OverEstimationBurn"
+	l.insert(e,false)
+
+/////////////////////////// Miner Tip
+
+	e.Id++
+	e.Amount=ledg.FilAmount(outp.MinerTip)
+
+	e.AddressId=RewardId
+	e.OffsetId=gasHolderId
+	e.MethodId=999
+	e.MethodName="inferred"
+	e.EntryType="MinerTip"
+	l.insert(e,false)
+
+	e.Id++
+	e.Amount=ledg.FilAmount(outp.MinerTip).Neg()
+
+	e.AddressId=callerAddressId
+	e.OffsetId=gasHolderId
+	e.MethodId=999
+	e.MethodName="inferred"
+	e.EntryType="MinerTip"
+	l.insert(e,false)
+}
+
+
+func (l *LedgerPosting) SetStateTree(ctx context.Context,st *state.StateTree) error{
+	//if st==nil {
+	//	return  xerrors.Errorf("Error: StateTree is nil for message from %s, to %s, meth %S", msg.From,msg.To,ledg_util.GetMethodName(msg))
+	//}
+	l.StateTree=st
+	l.Stinfo.Stree=st
+
+	blocks:=l.ts.Blocks()
+	for _,block:=range blocks {  l.Stinfo.LoadActorState(ctx,block.Miner, ledg.Opening)	}
+	return nil
+}
+
+func (l *LedgerPosting) StartMessage(ctx context.Context, st *state.StateTree, msg *types.Message, implicit bool) {
 	if ctx.Value("replay") == nil {return}
 
 	if  ctx.Value("epoch")==nil {		panic("GL.StartMessage: epoch must be not nil")	}
@@ -180,24 +224,26 @@ func (l *LedgerPosting) StartMessage(ctx context.Context,msg *types.Message,impl
 	if  l==nil  { panic ("GL.StartMessage: GL must be not nil") }
 	if msg==nil {panic("GL.StartMessage: param Msg is nil")}
 
+	//if err:=l.SetStateTree(st,msg);err!=nil {
+	//	ledg_util.Llogf(err.Error())
+	//}
+
 
 	epoch:=ctx.Value("epoch").(abi.ChainEpoch)
-
 
 	l.Epoch=epoch
 	l.OriginMsg=msg
 
 	l.InsertTxMessage(l.Epoch, len(l.messages),msg,implicit)
 
+	ledg_util.Llogf("Start Explicit Message %d",l.CurrentTxId)
 
+	//addr1,_:=address.NewIDAddress(1002)
+	//minerAddr,_:=address.NewIDAddress(8557)
+	//actor1002_1,_:=l.StateTree.GetActor(addr1)
+	l.Stinfo.LoadActorState(ctx,msg.To, ledg.Opening)
+	//l.Stinfo.LoadActorState(ctx,minerAddr,Opening)
 
-	llog.Info("Start Explicit Message ",l.CurrentTxId)
-
-
-	//l.MinerLedger.OriginMsg=Msg
-	//l.MinerLedger.IsImplicit=implicit
-
-	//l.Opening=l.getBalances()
 }
 
 func (l *LedgerPosting) FinalizeMessage(ctx context.Context, msg *types.Message,outp *ledg.GasOutputs){
@@ -206,50 +252,40 @@ func (l *LedgerPosting) FinalizeMessage(ctx context.Context, msg *types.Message,
 	if ctx.Value("replay") == nil {return}
 	if  l==nil  { panic ("GL.StartMessage: GL must be not nil") }
 
+	//addr1,_:=address.NewIDAddress(1002)
+	//l.Stinfo.LoadActorState(ctx,addr1,Closing)
+	//minerAddr,_:=address.NewIDAddress(8557)
+	//l.Stinfo.LoadActorState(ctx,minerAddr,Closing)
 
-	//var p *ledg_util.ActorMethodParams
+	l.Stinfo.LoadActorState(ctx,msg.To,ledg.Closing)
+
+	//for i,v:=range l.Stinfo.ActorStatesOnEnd {
+	//	//ledg_util.Llogf("ActorStateList %d StateTrans %s", i.String(),v.String())
+	//}
 
 	for p:=l.PostingStack.Pop(); p!=nil; p = l.PostingStack.Pop() {
-		//llog.Info("Posting: "+p.Msg.Cid().String()+" "+strconv.Itoa(l.PostingStack.GetCount()))
 		l.Posting(ctx,p)
 	}
 
-	if outp!=nil {	l.insertGasEntry(msg,outp) }
+	if outp!=nil {
+		l.insertGasEntry(msg,outp)
+	}
 
 
+	l.flush()
+
+	ledg_util.Llogf("FinalizeMessage %d",l.CurrentTxId)
 
 	l.OriginMsg=nil
-	return
-
-	//l.FinalizeMsg(ctx, outp,l.Epoch)
-	//l.fillClosingBalance()
-	//addr,_:=address.NewFromString("t01098")
-	//l.InsertActorHead("Finalize",nil,addr)
-
-	l.AppendRootEntry(ctx,l.OriginMsg,outp,0)
-
-	//e:=l.Entries[Msg.Cid().String()]
-
-
-	//if e!=nil {
-	//	miner:=l.OriginMsg.To
-
-		//e.MethodName=l.originMsg.Cid().String()//z_del
-		//e.Opening=l.Opening[miner]
-		//e.Balance =l.Closing[miner]
-		//e.Amount=l.BalancesDiff[miner]
-		//l.Entries[l.currentMsg.Cid().String()]=e
-	//}
-	//l.Flush(ctx)
-
-
+	l.SectorId=nil
+	l.MinerId=0
 }
 
 func (l *LedgerPosting) StartImplicitMessage(ctx context.Context,msg *types.Message) {
 	if ctx.Value("replay") == nil {return}
 	if  l==nil  { panic ("GL.StartImplicitMessage: GL must be not nil") }
-	llog.Info("StartImplicitMessage\n",msg)
-	l.StartMessage(ctx,msg,true)
+	//llog.Info("StartImplicitMessage\n",msg)
+	l.StartMessage(ctx, nil, msg, true)
 }
 
 func (l *LedgerPosting) FinalizeImplicitMessage(ctx context.Context,msg *types.Message){
@@ -259,16 +295,11 @@ func (l *LedgerPosting) FinalizeImplicitMessage(ctx context.Context,msg *types.M
 
 	l.FinalizeMessage(ctx,msg,nil)
 
-	llog.Info("FinalizeImplicitMessage\n",msg)
-
-	l.MinerLedger.Flush(ctx)
-
 	l.OriginMsg=nil
 }
 
 func (l*LedgerPosting) insertBlockHeader(header *types.BlockHeader, epoch abi.ChainEpoch,blockIdx int) {
 	blockId:=int(epoch)*10+blockIdx
-
 
 	minerId,_:=address.IDFromAddress(header.Miner)
 	ledg_util.GetOrCreateAccountFromId(int32(minerId),"",epoch)
@@ -282,7 +313,7 @@ func (l*LedgerPosting) insertBlockHeader(header *types.BlockHeader, epoch abi.Ch
 		Cid:      ledg.Cid{header.Cid()},
 	}
 	l.insert(&b,true)
-	//db.FirstOrCreate(&b)
+
 }
 
 func (l*LedgerPosting)startTipset(ts *types.TipSet,epoch abi.ChainEpoch) {
@@ -295,11 +326,6 @@ func (l*LedgerPosting)startTipset(ts *types.TipSet,epoch abi.ChainEpoch) {
 func (l*LedgerPosting)insertTipset(ts *types.TipSet,epoch abi.ChainEpoch) {
 
 	ts_id:=int32(epoch)
-
-
-	//var found models.Tipset
-	//result:=db.First(&found,ts_id)
-	//if result.RowsAffected>0{ return }
 
 	var arr [8]cid.Cid
 	copy(arr[:],ts.Cids())
@@ -321,37 +347,26 @@ func (l*LedgerPosting)insertTipset(ts *types.TipSet,epoch abi.ChainEpoch) {
 
 }
 
-//func (l * LedgerPosting) Log(m bson.M){
-//	mgo:=ledg_util.GetOrCreateMongoConnection()
-//	mgo.InsertLogEntry(m)
-//}
 
-func CreateGL(ctx context.Context, st *state.StateTree,  ts *types.TipSet,epoch abi.ChainEpoch ) *LedgerPosting {
-
-
+func CreateGL(ctx context.Context, adtStore adt.Store,  ts *types.TipSet,epoch abi.ChainEpoch ) *LedgerPosting {
 
 	l:= &LedgerPosting{
 
-		st:           st,
-		//cst:          cst,
+		ts:        ts,
+		adtStore:  adtStore,
 		Epoch: epoch,
-		minerEntries: make(map[int32]*models.LedgerEntry),
-
-		//MarketLedger: market_ledger.MarketLedger{},
-		//MinerLedger:  miner_ledger.CreateGL(ctx,st,cst,dump,epoch),
-		//PowerLedger:  CreatePowerLedger(ctx,epoch),
+		minerEntries: make(map[int]models.LedgerEntry),
+		Stinfo: &stateTransition.StateTrans{
+			Stree:              nil,
+			Ts:                 ts,
+			Store:              adtStore,
+			ActorStates: make(map[abi.ActorID]stateTransition.ActorStateTrans),
+		},
 	}
 
-	llog.Info("Ledger.CreateGL")
-
 	l.startTipset(ts,epoch)
-
-
-
 	return l
 }
-
-
 
 func (l *LedgerPosting) Send(ctx context.Context, msg *types.Message, methReturn []byte,gasUsed int64,epoch abi.ChainEpoch,callDepth uint64) error{
 	return nil
@@ -361,14 +376,9 @@ func (l *LedgerPosting) InsertTxMessage(epoch abi.ChainEpoch,i int, msg *types.M
 
 	txId :=int(epoch)*1000000+i
 
-	//var found models.TxMessage
 	l.CurrentTxId=txId
-	//result:=db.First(&found, txId)
-	//if result.RowsAffected>0{ return 0 }
-
 	fromId,_:=address.IDFromAddress(msg.From)
 	ToId,_:=address.IDFromAddress(msg.To)
-
 
 	ledg_util.GetOrCreateAccountFromId(int32(fromId),"",epoch)
 	ledg_util.GetOrCreateAccountFromId(int32(ToId),"",epoch)
@@ -389,24 +399,6 @@ func (l *LedgerPosting) InsertTxMessage(epoch abi.ChainEpoch,i int, msg *types.M
 		Implicit: implicit,
 	}
 	l.insert(&tx,true)
-
-	//if !implicit {
-	//	l.insertMinerEntrySend(ledg_util.ActorMethodParams{
-	//			Msg:   msg,
-	//			Ret:   nil,
-	//			Depth: 0,
-	//		})
-		//e:=l.minerEntrySendTemplate(ledg_util.ActorMethodParams{
-		//	Msg:   msg,
-		//	Ret:   nil,
-		//	Depth: 0,
-		//
-		//},0)
-		//e.TxId=txId
-		//l.insert(&e,true)
-
-	//}
-
 	return txId
 }
 
@@ -429,7 +421,6 @@ func (l *LedgerPosting) calcBalance() ledg.FilAmount{
 	for _,e:=range l.minerEntries {
 		bal=ledg.FilAmount{Int:bal.Add(bal.Int,e.Amount.Int)}
 	}
-
 	return bal
 }
 
@@ -439,8 +430,6 @@ func (l *LedgerPosting) Posting(ctx context.Context, p *ledg_util.ActorMethodPar
 	if  l==nil  { panic ("GL.Posting: GL must be not nil") }
 
 	if l.OriginMsg==nil {return nil}
-	//l.SetCurrentMsg(curMsg)
-
 
 	methName:=ledg_util.GetMethodName(p.Msg)
 	params:= ledg_util.ActorMethodParams{
@@ -452,6 +441,7 @@ func (l *LedgerPosting) Posting(ctx context.Context, p *ledg_util.ActorMethodPar
 	var minerMethods ledger.MinerMethods = l
 	var powerMethods ledger.PowerMethods = l
 	var marketMethods ledger.MarketMethods = l
+	var rewardMethods ledger.RewardMethods = l
 
 	addr:= p.Msg.To
 
@@ -470,10 +460,10 @@ func (l *LedgerPosting) Posting(ctx context.Context, p *ledg_util.ActorMethodPar
 		}
 	case "reward"://f02
 		switch methName {
-			case "Constructor":
-			case "AwardBlockReward":
-			case "ThisEpochReward":
-			case "UpdateNetworkKPI":
+			case "Constructor":rewardMethods.RewardActorConstructor(params)
+			case "AwardBlockReward":rewardMethods.AwardBlockReward(params)
+			case "ThisEpochReward":rewardMethods.ThisEpochReward(params)
+			case "UpdateNetworkKPI":rewardMethods.UpdateNetworkKPI(params)
 		}
 	case "cron"://f03
 		switch methName {
@@ -538,7 +528,7 @@ func (l *LedgerPosting) Posting(ctx context.Context, p *ledg_util.ActorMethodPar
 			case "DeclareFaultsRecovered":minerMethods.DeclareFaultsRecovered(params)
 			case "OnDeferredCronEvent":minerMethods.OnDeferredCronEvent(params)
 			case "CheckSectorProven":
-			case "ApplyRewards":
+			case "ApplyRewards":minerMethods.ApplyRewards(params)
 			case "ReportConsensusFault":
 			case "WithdrawBalance":
 			case "ConfirmSectorProofsValid":
@@ -551,14 +541,20 @@ func (l *LedgerPosting) Posting(ctx context.Context, p *ledg_util.ActorMethodPar
 			case "DisputeWindowedPoSt":
 		}
 	}
-
-	//if l.CurrentTxId!=130069000001 {return nil}
 	implemented := map[string]bool{
-		"PreCommitSector": true,
-		"CreateMiner":   true,
-		"Constructor":   true,
-	}
 
+		//miner
+		"PreCommitSector": true,
+		"Constructor":   true,
+		"ApplyRewards":   true,
+
+		//reward
+		"ThisEpochReward":true,
+		"AwardBlockReward":true,
+		//power
+		"CurrentTotalPower":true,
+		"CreateMiner":   true,
+	}
 
 	if implemented[methName] {
 		//llog.Info(methName," # ",l.CurrentTxId,", Depth: ",params.Depth," Implemented")
@@ -566,39 +562,27 @@ func (l *LedgerPosting) Posting(ctx context.Context, p *ledg_util.ActorMethodPar
 	}else {
 		//llog.Info(methName," # ",l.CurrentTxId,", Depth: ",params.Depth," Not Implemented")
 	}
-
-
 	idx:=int32(len(l.minerEntries))
 
 	e:=l.minerEntryTemplate(params,idx,false)
 	ledg_util.GetOrCreateAccountFromId(e.AddressId,"",l.Epoch)
 	ledg_util.GetOrCreateAccountFromId(e.OffsetId,"",l.Epoch)
-	e.CallDepth=params.Depth
+	e.CallDepth=int16(params.Depth)
 	e.TxId=l.CurrentTxId
-	l.insert(&e,false)
-
-	//l.minerEntryTemplate(params,int(l.Epoch*1000000)+idx)
+	e.MinerId=l.MinerId
+	e.SectorId=l.SectorId
+	l.insert(e,false)
 
 	return nil
 }
 
-func (l *LedgerPosting) FinalizeGL() {
+func (l *LedgerPosting) FinalizeGL(ctx context.Context) {
+
+	//for _,block:=range l.ts.Blocks(){
+	//	l.Stinfo.LoadActorState(ctx,block.Miner,Closing)
+	//}
 	bal:=l.calcBalance()
 	llog.Infof("tipset finalize: tx count %d, miner entries count %d, balance %s",len(l.messages), len(l.minerEntries),bal.String())
-	for _,e:=range l.minerEntries{
-		llog.Infof("Entry# %d method %s",e.Id,e.MethodName)
-	}
+
 }
-
-
-
-//func (l *LedgerPosting) Flush1(ctx context.Context){
-//	if ctx.Amount("export")==nil {return}
-//	if (l==nil) {return}
-//
-//	//for i:=range l.Entries{
-//	//	InsertEntry(l.Entries[i])
-//	//}
-//}
-
 

@@ -32,6 +32,14 @@ var stateListMessagesCmd = &cli.Command{
 	},
 	Action: func(cctx *cli.Context) error {
 		api, closer, err := GetFullNodeAPI(cctx)
+
+
+		//addr,_:=address.NewIDAddress(8557)
+		//ts,err:=api.ChainGetTipSetByHeight(context.TODO(),130070,types.TipSetKey{})
+		//pcInfo,_:=api.StateSectorPreCommitInfo(ReqContext(cctx),addr,753,ts.Key())
+		//fmt.Println(pcInfo)
+		//return nil
+
 		if err != nil {
 			return err
 		}
@@ -56,6 +64,9 @@ var stateListMessagesCmd = &cli.Command{
 		fmt.Println(h,h2)
 		for i:=h;i<=h2;i++ {
 			ts,err:=api.ChainGetTipSetByHeight(ctx,i,types.TipSetKey{})
+			//tsnext,err:=api.ChainGetTipSetByHeight(ctx,i+1,types.TipSetKey{})
+
+
 			fmt.Printf("Loading epoch... %d \n",i)
 
 			ctx1:=context.WithValue(ctx,"replay",true)

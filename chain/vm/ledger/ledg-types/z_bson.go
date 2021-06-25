@@ -53,11 +53,11 @@ func (m *DealWeight) UnmarshalBSONValue(t bsontype.Type, data []byte) error {
 	return nil
 }
 
-func (c Address) MarshalBSONValue() (bsontype.Type, []byte, error) {
+func (c AddressMongo) MarshalBSONValue() (bsontype.Type, []byte, error) {
 	return bson.MarshalValue(c.String())
 }
 
-func (m *Address) UnmarshalBSONValue(t bsontype.Type, data []byte) error {
+func (m *AddressMongo) UnmarshalBSONValue(t bsontype.Type, data []byte) error {
 	s:=""
 	err:=bson.RawValue{Type: t, Value: data}.Unmarshal(&s)
 	if err!=nil {return err}

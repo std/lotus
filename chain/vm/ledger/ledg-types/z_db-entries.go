@@ -11,8 +11,8 @@ type LedgerEntryMongo struct {
 
 	Version uint64 //Msg.Version
 
-	Address Address `bson:"Address"` //Msg.To
-	Offset  Address //Msg.From
+	Address AddressMongo `bson:"AddressMongo"` //Msg.To
+	Offset  AddressMongo //Msg.From
 
 	Nonce uint64 //Msg.Nonce
 
@@ -39,7 +39,7 @@ type LedgerEntryMongo struct {
 	CallDepth 	uint64
 
 	SectorNumber SectorNumber
-	Miner		Address
+	Miner        AddressMongo
 
 	//Deals     []abi.DealID
 	Invariant FilAmount //should be zero

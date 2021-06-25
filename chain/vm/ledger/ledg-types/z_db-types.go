@@ -49,7 +49,7 @@ type SectorMongo struct {
 	Id        string `bson:"_id"`
 	SectorNum SectorNumber `bson:"SectorNum"`
 
-	Miner Address `bson:"Miner"`
+	Miner AddressMongo `bson:"Miner"`
 
 	PreCommitEpoch 	abi.ChainEpoch  `bson:"PreCommitEpoch"`
 	CommitEpoch		abi.ChainEpoch  `bson:"CommitEpoch"`
@@ -87,19 +87,19 @@ type MiningStats struct{
 }
 
 type MinerProperties struct {
-	PeerId string `bson:"PeerId"`
-	Owner Address `bson:"Owner"`
-	Worker Address `bson:"Worker"`
-	Region string `bson:"Region"`
-	Country string `bson:"Country"`
-	Ip string `bson:"Ip"`
+	PeerId  string       `bson:"PeerId"`
+	Owner   AddressMongo `bson:"Owner"`
+	Worker  AddressMongo `bson:"Worker"`
+	Region  string       `bson:"Region"`
+	Country string       `bson:"Country"`
+	Ip      string       `bson:"Ip"`
 }
 
 
 
 type ActorMongo struct {
 	Id string `bson:"_id"`
-	Address string `bson:"Address"`
+	Address string `bson:"AddressMongo"`
 	Name string `bson:"Name"`
 	CompanyId string `bson:"CompanyId"`
 	Signature string `bson:"Signature"`

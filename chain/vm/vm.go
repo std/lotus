@@ -249,7 +249,11 @@ func NewVM(ctx context.Context, opts *VMOpts) (*VM, error) {
 
 	var Ledger  *Posting.LedgerPosting
 
-	if (ctx.Value("gl")!=nil){		Ledger= ctx.Value("gl").(*Posting.LedgerPosting)}
+	if (ctx.Value("gl")!=nil){
+		Ledger= ctx.Value("gl").(*Posting.LedgerPosting)
+		Ledger.SetStateTree(ctx,state)
+	}
+
 
 	return &VM{
 		cstate:         state,
@@ -543,7 +547,7 @@ func (vm *VM) ApplyMessage(ctx context.Context, cmsg types.ChainMsg) (*ApplyRet,
 
 
 	//stander
-	vm.Ledger.StartMessage(ctx,msg,false)
+	vm.Ledger.StartMessage(ctx,vm.cstate,msg,false)
 
 
 
@@ -636,6 +640,7 @@ func (vm *VM) ApplyMessage(ctx context.Context, cmsg types.ChainMsg) (*ApplyRet,
 			GasRefund:          gasOutputs.GasRefund,
 			GasBurned:          gasOutputs.GasBurned,
 			GasUsed:            gasUsed,
+			GasCost: 			gascost,
 	})
 
 

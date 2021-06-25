@@ -1,4 +1,4 @@
-package market_ledger
+package z_market_ledger
 
 //func (t *DealProposal) UnmarshalCBOR(r io.Reader) error {
 //	*t = DealProposal{}

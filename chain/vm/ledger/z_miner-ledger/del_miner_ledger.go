@@ -1,4 +1,4 @@
-package miner_ledger
+package z_miner_ledger
 
 import (
 	"context"
@@ -212,11 +212,11 @@ func (l *MinerLedger) AddEntry(ctx context.Context, msg *types.Message,sendRet [
 
 	amount:= ledg.DimBalance{ledg.Available: ledg.FilAmount(msg.Value)}
 	sectorNumber := ledg.SectorNumber(0)
-	minerAddress:=ledg.Address{}
+	minerAddress:=ledg.AddressMongo{}
 	if ledg_util.IsMiner(l.OriginMsg.To) {
 		s:= l.getSectorFromParams(l.OriginMsg)
 		sectorNumber=ledg.SectorNumber(s.Number)
-		minerAddress=ledg.Address{l.OriginMsg.To}
+		minerAddress=ledg.AddressMongo{l.OriginMsg.To}
 	}
 
 	//actorBalances:=l.getBalances()
@@ -253,8 +253,8 @@ func (l *MinerLedger) AddEntry(ctx context.Context, msg *types.Message,sendRet [
 }
 
 func (l *MinerLedger) fillMsgFields(msg *types.Message) ledg.LedgerEntryMongo {
-	address2:=ledg.Address{msg.To};
-	offset:=ledg.Address{msg.From}
+	address2:=ledg.AddressMongo{msg.To};
+	offset:=ledg.AddressMongo{msg.From}
 
 	e := ledg.LedgerEntryMongo{
 		//Id:      msg.Cid().String(),
@@ -305,11 +305,11 @@ func (l *MinerLedger) LockPrecommitDeposit( msg *types.Message,sendRet []byte,ca
 
 
 	sectorNumber := ledg.SectorNumber(0)
-	minerAddress:=ledg.Address{}
+	minerAddress:=ledg.AddressMongo{}
 	if ledg_util.IsMiner(l.OriginMsg.To) {
 		s:= l.getSectorFromParams(l.OriginMsg)
 		sectorNumber=ledg.SectorNumber(s.Number)
-		minerAddress=ledg.Address{l.OriginMsg.To}
+		minerAddress=ledg.AddressMongo{l.OriginMsg.To}
 	}
 
 	amount:= ledg.DimBalance{ledg.Available: ledg.FilAmount(msg.Value)}
@@ -367,7 +367,7 @@ func (l *MinerLedger) Flush(ctx context.Context){
 //}
 
 func ZeroDimBalance() ledg.DimBalance {
-	ret:=make (map[int]ledg.FilAmount)
+	ret:=make (map[int16]ledg.FilAmount)
 
 	//for i:=range []int{Available,PreCommitDeposits,InitialPledge,LockedFunds,Vesting}{ ret[i]=ZeroAmount()	}
 	ret[ledg.Available]= ZeroAmount()
@@ -392,16 +392,16 @@ func (state State) ToMinerBalance(totalBalance ledg.FilAmount,vestingFunds ledg.
 	pledge:=ledg.FilAmount(state.InitialPledge)
 	locked:=ledg.FilAmount(state.LockedFunds)
 	debt:=ledg.FilAmount(state.FeeDebt)
-	available:=ledg.FilAmount{
-		totalBalance.
-			Neg(deposit.Int).
-			Neg(pledge.Int).
-			Neg(locked.Int).
-			Neg(vestingFunds.Int).
-			Neg(debt.Int),
-	}
+	//available:=ledg.FilAmount{
+	//	totalBalance.
+	//		Neg(deposit.Int).
+	//		Neg(pledge.Int).
+	//		Neg(locked.Int).
+	//		Neg(vestingFunds.Int).
+	//		Neg(debt.Int),
+	//}
 	ret:=ledg.DimBalance{
-		ledg.Available:         available,
+	//	ledg.Available:         available,
 		ledg.PreCommitDeposits: deposit,
 		ledg.InitialPledge:     pledge,
 		ledg.LockedFunds:       locked,
@@ -440,8 +440,8 @@ func (l *MinerLedger)  AppendRootEntry(ctx context.Context, msg * types.Message,
 		Id:          msg.Cid().String()+"-root",
 		EntryCid:    ledg.Cid{msg.Cid()},
 		MsgCid:      ledg.Cid{l.OriginMsg.Cid()},
-		Address:     ledg.Address{msg.From},
-		Offset:      ledg.Address{msg.To},
+		Address:     ledg.AddressMongo{msg.From},
+		Offset:      ledg.AddressMongo{msg.To},
 		TotalAmount: ledg.DimBalance{ledg.Available: ledg.FilAmount(totalAmount)},
 		Amount:      ZeroDimBalance(),
 

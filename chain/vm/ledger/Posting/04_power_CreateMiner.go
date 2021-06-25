@@ -61,20 +61,21 @@ func (ledger *LedgerPosting) CreateMiner(p ledg_util.ActorMethodParams) {
 
 
 	ledger.insert(&minerActor,true)
+	ledger.MinerId=minerActor.ID
 
 	e:=ledger.minerEntryTemplate(p,0,false)
 
 	e.TxId=ledger.CurrentTxId
-	e.CallDepth=p.Depth
+	e.CallDepth=int16(p.Depth)
 	e.MinerId=int32(addrId)
-	ledger.insert(&e,true)
+	ledger.insert(e,false)
 
 	e2:=ledger.minerEntryTemplate(p,0,true)
 
 	e2.TxId=ledger.CurrentTxId
-	e2.CallDepth=p.Depth
+	e2.CallDepth=int16(p.Depth)
 	e2.MinerId=int32(addrId)
-	ledger.insert(&e2,true)
+	ledger.insert(e2,false)
 
 
 

@@ -1,10 +1,9 @@
-package market_ledger
+package z_market_ledger
 
 import (
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/lotus/api"
-	"github.com/filecoin-project/lotus/chain/vm/ledger/Posting"
 	ledg "github.com/filecoin-project/lotus/chain/vm/ledger/ledg-types"
 	"github.com/ipfs/go-cid"
 	"go.mongodb.org/mongo-driver/bson"
@@ -28,7 +27,7 @@ type Deal struct {
 	abi.DealID
 	//DealId abi.DealID
 	SectorId abi.SectorID
-	Status   Posting.DealStatus
+	Status   ledg.DealStatus
 
 	PieceCID             cid.Cid
 	PieceSize            abi.PaddedPieceSize

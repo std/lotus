@@ -771,15 +771,15 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 		return err
 	}
 
-	// t.PreCommitInfo (miner.SectorPreCommitInfo) (struct)
-	if len("PreCommitInfo") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"PreCommitInfo\" was too long")
+	// t.GetSectorPreCommitOnChainInfo (miner.SectorPreCommitInfo) (struct)
+	if len("GetSectorPreCommitOnChainInfo") > cbg.MaxLength {
+		return xerrors.Errorf("Amount in field \"GetSectorPreCommitOnChainInfo\" was too long")
 	}
 
-	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("PreCommitInfo"))); err != nil {
+	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("GetSectorPreCommitOnChainInfo"))); err != nil {
 		return err
 	}
-	if _, err := io.WriteString(w, string("PreCommitInfo")); err != nil {
+	if _, err := io.WriteString(w, string("GetSectorPreCommitOnChainInfo")); err != nil {
 		return err
 	}
 
@@ -1367,8 +1367,8 @@ func (t *SectorInfo) UnmarshalCBOR(r io.Reader) error {
 			if _, err := io.ReadFull(br, t.Proof[:]); err != nil {
 				return err
 			}
-			// t.PreCommitInfo (miner.SectorPreCommitInfo) (struct)
-		case "PreCommitInfo":
+			// t.GetSectorPreCommitOnChainInfo (miner.SectorPreCommitInfo) (struct)
+		case "GetSectorPreCommitOnChainInfo":
 
 			{
 
@@ -1382,7 +1382,7 @@ func (t *SectorInfo) UnmarshalCBOR(r io.Reader) error {
 					}
 					t.PreCommitInfo = new(miner.SectorPreCommitInfo)
 					if err := t.PreCommitInfo.UnmarshalCBOR(br); err != nil {
-						return xerrors.Errorf("unmarshaling t.PreCommitInfo pointer: %w", err)
+						return xerrors.Errorf("unmarshaling t.GetSectorPreCommitOnChainInfo pointer: %w", err)
 					}
 				}
 

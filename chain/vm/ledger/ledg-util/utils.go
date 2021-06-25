@@ -5,15 +5,21 @@ import (
 	"github.com/filecoin-project/go-state-types/big"
 	"github.com/filecoin-project/lotus/chain/types"
 	ledg_types "github.com/filecoin-project/lotus/chain/vm/ledger/ledg-types"
-
-
 	"github.com/ipfs/go-cid"
+	logging "github.com/ipfs/go-log/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"strconv"
 )
 
 
+var llog			= logging.Logger("gledger")
 
+func Llog(s string){
+	llog.Info(s)
+}
+func Llogf(template string, args ...interface{}){
+	llog.Infof(template,args...)
+}
 
 
 
@@ -217,6 +223,13 @@ func  Log(m bson.M){
 	mgo:=GetOrCreateMongoConnection()
 	mgo.InsertLogEntry(m)
 }
-//func EnsureNotNil(p interface{},text string){
-//	if p==nil {panic(text)}
-//}
+
+
+
+
+func MaxOf(i1,i2 int) int {
+	max := i1
+	if max<i2 {max=i2}
+
+	return max
+}

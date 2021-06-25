@@ -11,6 +11,9 @@ func FilAmountFromInt(i int64) FilAmount{
 	return FilAmount{big.NewInt(0).SetInt64(i)}
 }
 
+func (v FilAmount) Neg() FilAmount {
+	return FilAmount(big.NewFromGo(v.Int).Neg())
+}
 func (v FilAmount) Value()(value driver.Value,err error) {
 	//llog.Infof("FilAmount GormValue")
 	ret:=v.String()

@@ -7,69 +7,12 @@ import (
 	m "github.com/filecoin-project/lotus/chain/vm/ledger/models"
 )
 
-//type PowerLedger struct {
-//	MinerId uint32
-//	Miner models.Account
-//
-//	SectorId uint32
-//	Sector models.Sector
-//
-//	RawBytePower ledg.StoragePower
-//	QualityAdjPower ledg.StoragePower
-//
-//	epoch abi.ChainEpoch
-//	//db *gorm.DB
-//}
-//func  CreateGeneralLedger(ctx context.Context, epoch abi.ChainEpoch) *PowerLedger {
-//
-//	return &PowerLedger{
-//
-//		epoch: epoch,
-//		db:ledg_util.GetPgDatabase(),
-//	}
-//}
-
-//type PowerTotal struct {
-//	RawBytePower ledg.StoragePower
-//	// Sum of quality adjusted power for a miner's sectors.
-//	QualityAdjPower ledg.StoragePower
-//}
-//
-//type LedgerPosting struct {
-//	MinerId uint32
-//	Miner models.Account
-//
-//	SectorId uint32
-//	Sector models.Sector
-//
-//	RawBytePower ledg.StoragePower
-//	QualityAdjPower ledg.StoragePower
-//
-//	epoch abi.ChainEpoch
-//	db *gorm.DB
-//}
-
-//type DelGeneralLedger struct {
-//	details map[ledg.Address]string
-//	epoch abi.ChainEpoch
-//	db *gorm.DB
-//}
-
-
-//type GeneralLedgerDetails struct {
-//	details map[ledg.Address]map[ledg.SectorNumber] string
-//}
-
-
-
 
 func  (l *LedgerPosting) NewSectorOnChain_del(s *m.Sector, origMsgCid, sectorPreCommitInfo ledg.Cid) error {
 
 	ledg_util.GetOrCreateAccountFromId(s.MinerId,"",l.Epoch)
 
-	//if ledg_util.Exists(&models.Sector{},int(s.ID)) { return nil}
-
-	l.insert(s,true)
+	l.insert(s,false)
 
 	se:=&m.PowerEntry{
 		MinerId:         s.MinerId,
@@ -84,13 +27,13 @@ func  (l *LedgerPosting) NewSectorOnChain_del(s *m.Sector, origMsgCid, sectorPre
 		//StateCid:      sectorPreCommitInfo,
 	}
 
-
-	l.insert(se,true)
+	l.insert(se,false)
 	return nil
 
 }
 
 func (l *LedgerPosting) PowerConstructor(p ledg_util.ActorMethodParams) {
+
 	
 }
 
@@ -119,7 +62,7 @@ func (l *LedgerPosting) SubmitPoRepForBulkVerify(p ledg_util.ActorMethodParams) 
 }
 
 func (l *LedgerPosting) CurrentTotalPower(p ledg_util.ActorMethodParams) {
-	
+	//readonly
 }
 
 

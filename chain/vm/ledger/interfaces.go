@@ -62,7 +62,7 @@ type MarketMethods interface {
 	CronTick(params ledg_util.ActorMethodParams)                 //9
 }
 
-type RewardActor interface {
+type RewardMethods interface {
 	RewardActorConstructor(params ledg_util.ActorMethodParams) //1
 	AwardBlockReward(params ledg_util.ActorMethodParams)       //2
 	ThisEpochReward(params ledg_util.ActorMethodParams)        //3

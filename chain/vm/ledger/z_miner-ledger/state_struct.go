@@ -1,4 +1,4 @@
-package miner_ledger
+package z_miner_ledger
 
 import (
 	"github.com/filecoin-project/go-bitfield"

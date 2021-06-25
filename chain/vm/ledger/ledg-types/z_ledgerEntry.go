@@ -10,7 +10,7 @@ import (
 //func (e LedgerEntryMongo) Export() types.LedgerEntryExport{
 //	return types.LedgerEntryExport{
 //		TxCid:       e.EntryCid.String(),
-//		Address:     e.Address.String(),
+//		AddressMongo:     e.AddressMongo.String(),
 //		Offset:      e.Offset.String(),
 //		MethodNum:   e.Method,
 //		Value:       e.Amount.String(),
@@ -40,7 +40,7 @@ func (e LedgerEntryMongo) MarshalBSON1() ([]byte, error) {
 	d:=bson.M{
 		//"_id":          e.Id,
 		"EntryCid":       cid,
-		"Address":     e.Address.String(),
+		"AddressMongo":     e.Address.String(),
 		"Offset":      e.Offset.String(),
 		"Method":   e.Method.String(),
 		"Value":       e.Value.String(),
@@ -72,10 +72,10 @@ func (e *LedgerEntryMongo) UnmarshalBSON1(data []byte) error {
 	//e.EntryCid=c
 	method,_:=strconv.ParseUint(m["Method"].(string),10,64)
 	//fmt.Println(m)
-	addr,err:=address.NewFromString(m["Address"].(string));		if err != nil {return err}
-	e.Address =Address{addr}
+	addr,err:=address.NewFromString(m["AddressMongo"].(string));		if err != nil {return err}
+	e.Address = AddressMongo{addr}
 	offset,err:=address.NewFromString(m["Offset"].(string));		if err != nil {return err}
-	e.Offset=Address{offset}
+	e.Offset= AddressMongo{offset}
 	e.Method = abi.MethodNum(method)
 	e.Value = BsonM2TokenAmount(m["Amount"])
 

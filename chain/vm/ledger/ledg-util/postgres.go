@@ -83,6 +83,7 @@ func fillMinerTypes(){
 		5:"Market",                        //f05
 		6:"Registry",                      //f06
 		99:"Burn",//f099
+		999:"GasHolder",
 		1000:"Miner",
 	}
 	for id,descr:=range types {
@@ -122,8 +123,10 @@ func migrate(){
 		//models.AccountType{},
 		models.Sector{},
 		models.PowerEntry{},
-		//models.LedgerEntry{},
+		models.LedgerEntry{},
 		models.TablePart{},
+		models.VestingSchedule{},
+		models.VestingEntry{},
 
 		)
 	loadAddressCache()
@@ -168,12 +171,14 @@ func GetPgDatabase() *gorm.DB{
 func dropTables() {
 	_db:=GetPgDatabase()
 	_db.Migrator().DropTable(models.TablePart{})
-	//_db.Migrator().DropTable(models.LedgerEntry{})
+	_db.Migrator().DropTable(models.LedgerEntry{})
 	_db.Migrator().DropTable(models.PowerEntry{})
 	_db.Migrator().DropTable(models.TxMessage{})
 	_db.Migrator().DropTable(models.Sector{})
 	_db.Migrator().DropTable(models.Block{})
 	_db.Migrator().DropTable(models.Tipset{})
+	_db.Migrator().DropTable(models.VestingEntry{})
+	_db.Migrator().DropTable(models.VestingSchedule{})
 	//_db.Migrator().DropTable(models.Account{})
 	//_db.Migrator().DropTable(models.AccountType{})
 

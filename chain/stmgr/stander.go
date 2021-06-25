@@ -2,33 +2,40 @@ package stmgr
 
 import (
 	"context"
+	addr "github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/lotus/api"
+	"github.com/filecoin-project/lotus/chain/actors/builtin/miner"
 	"github.com/filecoin-project/lotus/chain/store"
 	"github.com/filecoin-project/lotus/chain/types"
 	"github.com/filecoin-project/lotus/chain/vm"
 	"github.com/filecoin-project/lotus/chain/vm/ledger/Posting"
+	logging "github.com/ipfs/go-log/v2"
+
 	"github.com/ipfs/go-cid"
 	"go.opencensus.io/trace"
 	"golang.org/x/xerrors"
 )
 
 
-
-
-
-
-
+var llog			= logging.Logger("gledger")
 
 func (sm *StateManager) computeTipSetStateEx(ctx context.Context, ts *types.TipSet, cb ExecCallback,epoch abi.ChainEpoch) (cid.Cid, cid.Cid, error) {
 	ctx, span := trace.StartSpan(ctx, "computeTipSetState")
 	defer span.End()
 
-	st,_:=sm.ParentState(ts)
-	gl:= Posting.CreateGL(ctx,st,ts,epoch)
-	ctx=context.WithValue(ctx,"gl",gl)
+	//st,_:=sm.ParentState(ts)
 
+	adt:=sm.cs.ActorStore(ctx)
+
+	gl:= Posting.CreateGL(ctx,adt,ts,epoch)
+	ctx=context.WithValue(ctx,"gl",gl)
+	//
 	blks := ts.Blocks()
+	//
+	//minerAddr,_:=addr.NewFromString("t08557")
+	//actor,_:=st.GetActor(minerAddr)
+	//llog.Infof("actor pre %s",actor.Head.String())
 
 	for i := 0; i < len(blks); i++ {
 
@@ -62,11 +69,32 @@ func (sm *StateManager) computeTipSetStateEx(ctx context.Context, ts *types.TipS
 	}
 
 	baseFee := blks[0].ParentBaseFee
+
+
 	ret1,ret2,err:=sm.ApplyBlocks(ctx, parentEpoch, pstate, blkmsgs, blks[0].Height, r, cb, baseFee, ts)
-	gl.FinalizeGL()
+
+
+	gl.FinalizeGL(ctx)
+
 	return ret1,ret2,err
 }
 
+func (sm * StateManager) getMinerState(ctx context.Context, maddr addr.Address,ts *types.TipSet) (miner.State,error){
+
+		act, err := sm.LoadActor(ctx, maddr, ts)
+		//if err != nil {
+		//	return nil, xerrors.Errorf("(get sset) failed to load miner actor: %w", err)
+		//}
+
+		mas,err := miner.Load(sm.cs.ActorStore(ctx), act)
+		//if err != nil {
+		//	return nil, xerrors.Errorf("(get sset) failed to load miner actor state: %w", err)
+		//}
+
+
+		return mas,err
+
+}
 
 
 

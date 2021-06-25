@@ -28,15 +28,17 @@ func ( l *LedgerPosting) minerEntryTemplate(p ledg_util.ActorMethodParams,idx in
 	if idx==0 {		idx=int32(len(l.minerEntries))	}
 
 	var addressId, offsetId int32
-	var methodName string
+	var methodName,entryType string
 	var amount ledg.FilAmount
 	if initialEntry {
 		methodName="=> "+ledg_util.GetMethodName(p.Msg)
+		entryType="transfer"
 		addressId,_=ledg_util.GetOrCreateAccountFromAddress(p.Msg.From,"",l.Epoch)
 		offsetId,_=ledg_util.GetOrCreateAccountFromAddress(p.Msg.To,"",l.Epoch)
 		amount=ledg.FilAmount(big.NewFromGo(p.Msg.Value.Int).Neg())
 
 	} else {
+		entryType=""
 		methodName=ledg_util.GetMethodName(p.Msg)
 		addressId, _ = ledg_util.GetOrCreateAccountFromAddress(p.Msg.To, "", l.Epoch)
 		offsetId, _ = ledg_util.GetOrCreateAccountFromAddress(p.Msg.From, "", l.Epoch)
@@ -49,23 +51,25 @@ func ( l *LedgerPosting) minerEntryTemplate(p ledg_util.ActorMethodParams,idx in
 		//Version:    0,
 		AddressId:  int32(addressId),
 
-		//Address:    ,
+		//AddressMongo:    ,
 		OffsetId:   int32(offsetId),
 		//Nonce:      msg.Nonce,
 		Amount:     amount,
+		Balance0: ledg.FilAmountFromInt(0),
+		Balance: ledg.FilAmountFromInt(0),
 		//GasLimit:   0,
 		//GasFeeCap:  ledg.FilAmount{},
 		//GasPremium: ledg.FilAmount{},
-		Method:     p.Msg.Method,
+		MethodId:     int16(p.Msg.Method),
 		//Params:     nil,
 		//GasFee:     ledg.FilAmount{},
 		//MinerTip:   ledg.FilAmount{},
 		//GasUsed:    0,
-		CallDepth:  p.Depth,
+		CallDepth:  int16(p.Depth),
 		SectorId:   nil,
 		Sector:     nil,
 		Miner:      m.Account{},
-		EntryType:  "",
+		EntryType:  ledg.EntryTypeConst(entryType),
 		MethodName: methodName,
 		//Note:       "",
 		Implicit:   false,
@@ -79,56 +83,20 @@ func(l *LedgerPosting) MinerActorConstructor(p ledg_util.ActorMethodParams) {
 	msg:=p.Msg
 	methReturn:=p.Ret
 
-	llog.Info("LedgerPosting.MinerActorConstructor")
 	cm		:=	power.CreateMinerParams{}
 	cm_ret	:=	power.CreateMinerReturn{}
 
 	cm.UnmarshalCBOR(bytes.NewReader(msg.Params))
 	cm_ret.UnmarshalCBOR(bytes.NewReader(methReturn))
 
-	//addrId,_:=address.IDFromAddress(cm_ret.IDAddress)
-	//minerActor:=m.Account{
-	//	ID:            int32(addrId),
-	//	Address:       cm_ret.RobustAddress.String(),
-	//
-	//	Name: "Miner: "+cm_ret.IDAddress.String(),
-	//
-	//	CreationEpoch: l.Epoch,
-	//	//Balance:       ledg.DimBalance{
-	//	//	ledg.Available:ledg.FilAmountFromInt(11),
-	//	//	ledg.InitialPledge: ledg.FilAmountFromInt(22),
-	//	//},
-	//	//SectorCounts: ledg.SectorCounts{Active: 11},
-	//	//PowerBalance:ledg.PowerBalance{VerifiedStoragePower: ledg.StoragePowerFromInt(123)},
-	//	//ActorTypeConst: models.Miner,
-	//	//TotalReward: ledg.FilAmountFromInt(123),
-	//	//MessagesCount: 999,
-	//
-	//	//Stats: ledg.MiningStats{
-	//	//	PowerGrowth:           ledg.StoragePowerFromInt(32*1024*1024),
-	//	//	BlocksMined:           8,
-	//	//	MiningEfficiencyPerTB: ledg.FilAmountFromInt(100025),
-	//	//	WinCount:              10,
-	//	//	MinerEquivalent:       15.89,
-	//	//},
-	//	//Properties: ledg.MinerProperties{
-	//	//	PeerId:  "12D3KooWRudzcMVAgZapWJXPDKDgUMZbbsQFeDHcAFQwxAWrtQTV",
-	//	//	Owner:   ledg.NewAddressFromString("f3wkx7jksblo4kehbklknlivm6pniartluv3nqz3mpwjj5dyfu55pctvyxxejkjgki7qp3r3thxt3wk73hwsua"),
-	//	//	Worker:  ledg.NewAddressFromString("f3rzvyvt6lnamvx7dc4ulrukenudq7ywzrdjelnpouwzsurqnep5vcick7x72w4tslmyvqbx2mkemkqalbtswq"),
-	//	//	Region:  "europe",
-	//	//	Country: "lv",
-	//	//	Ip:      "8.8.8.8",
-	//	//},
-	//}
-	//
-	//l.insert(&minerActor,true)
-
 	e:=l.minerEntryTemplate(p,0,false)
 	e.MethodName="MinerActorCtor"
 	e.AddressId=0
 	e.TxId=l.CurrentTxId
-	e.CallDepth=p.Depth
-	l.insert(&e,true)
+	e.CallDepth=int16(p.Depth)
+	e.MinerId=l.MinerId
+	e.SectorId=l.SectorId
+	l.insert(e,false)
 }
 
 
@@ -157,7 +125,7 @@ func(l *LedgerPosting)DeclareFaults(p ledg_util.ActorMethodParams)            {}
 func(l *LedgerPosting)DeclareFaultsRecovered(p ledg_util.ActorMethodParams)   {} //11
 func(l *LedgerPosting)OnDeferredCronEvent(p ledg_util.ActorMethodParams)      {} //12
 func(l *LedgerPosting)CheckSectorProven(p ledg_util.ActorMethodParams)        {} //13
-func(l *LedgerPosting)ApplyRewards(p ledg_util.ActorMethodParams)             {} //14
+
 func(l *LedgerPosting)ReportConsensusFault(p ledg_util.ActorMethodParams)     {} //15
 func(l *LedgerPosting)WithdrawBalance(p ledg_util.ActorMethodParams)          {} //{/16
 func(l *LedgerPosting)ConfirmSectorProofsValid(p ledg_util.ActorMethodParams) {} //{/17

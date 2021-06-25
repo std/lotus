@@ -6,6 +6,8 @@ import (
 	"github.com/filecoin-project/go-state-types/exitcode"
 )
 
+
+
 type MessageReceipt struct {
 	ExitCode exitcode.ExitCode
 	Return   []byte

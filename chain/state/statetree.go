@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-
 	"github.com/ipfs/go-cid"
+
 	cbor "github.com/ipfs/go-ipld-cbor"
 	logging "github.com/ipfs/go-log/v2"
 	"go.opencensus.io/trace"
