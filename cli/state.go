@@ -795,8 +795,8 @@ var StateReadStateCmd = &cli.Command{
 		return nil
 	},
 }
-
-var StateListMessagesCmd = &cli.Command{
+//var StateListMessagesCmd = &cli.Command{
+var _ = &cli.Command{
 	Name:  "list-messages",
 	Usage: "list messages on chain matching given criteria",
 	Flags: []cli.Flag{

@@ -9,7 +9,7 @@ import (
 )
 
 
-var stateListMessagesCmd = &cli.Command{
+var StateListMessagesCmd = &cli.Command{
 	Name:  "list-messages",
 	Usage: "list messages on chain matching given criteria",
 	Flags: []cli.Flag{
