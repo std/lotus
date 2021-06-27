@@ -19,7 +19,8 @@ import (
 	"github.com/filecoin-project/go-state-types/big"
 	"github.com/filecoin-project/go-state-types/network"
 
-	"github.com/filecoin-project/lotus/api"
+	lapi "github.com/filecoin-project/lotus/api"
+	"github.com/filecoin-project/lotus/api/v1api"
 	"github.com/filecoin-project/lotus/build"
 	"github.com/filecoin-project/lotus/chain/stmgr"
 	"github.com/filecoin-project/lotus/chain/types"
@@ -39,7 +40,7 @@ func init() {
 type StorageBuilder func(context.Context, *testing.T, abi.RegisteredSealProof, address.Address) TestStorageNode
 
 type TestNode struct {
-	api.FullNode
+	v1api.FullNode
 	// ListenAddr is the address on which an API server is listening, if an
 	// API server is created for this Node
 	ListenAddr multiaddr.Multiaddr
@@ -48,7 +49,7 @@ type TestNode struct {
 }
 
 type TestStorageNode struct {
-	api.StorageMiner
+	lapi.StorageMiner
 	// ListenAddr is the address on which an API server is listening, if an
 	// API server is created for this Node
 	ListenAddr multiaddr.Multiaddr
@@ -120,9 +121,10 @@ var OneMiner = []StorageMiner{{Full: 0, Preseal: PresealGenesis}}
 var OneFull = DefaultFullOpts(1)
 var TwoFull = DefaultFullOpts(2)
 
-var FullNodeWithActorsV4At = func(upgradeHeight abi.ChainEpoch) FullNodeOpts {
+var FullNodeWithLatestActorsAt = func(upgradeHeight abi.ChainEpoch) FullNodeOpts {
 	if upgradeHeight == -1 {
-		upgradeHeight = 3
+		// Attention: Update this when introducing new actor versions or your tests will be sad
+		upgradeHeight = 4
 	}
 
 	return FullNodeOpts{
@@ -138,8 +140,12 @@ var FullNodeWithActorsV4At = func(upgradeHeight abi.ChainEpoch) FullNodeOpts {
 				Migration: stmgr.UpgradeActorsV3,
 			}, {
 				Network:   network.Version12,
-				Height:    upgradeHeight,
+				Height:    3,
 				Migration: stmgr.UpgradeActorsV4,
+			}, {
+				Network:   network.Version13,
+				Height:    upgradeHeight,
+				Migration: stmgr.UpgradeActorsV5,
 			}})
 		},
 	}
@@ -164,15 +170,40 @@ var FullNodeWithSDRAt = func(calico, persian abi.ChainEpoch) FullNodeOpts {
 	}
 }
 
+var FullNodeWithV4ActorsAt = func(upgradeHeight abi.ChainEpoch) FullNodeOpts {
+	if upgradeHeight == -1 {
+		upgradeHeight = 3
+	}
+
+	return FullNodeOpts{
+		Opts: func(nodes []TestNode) node.Option {
+			return node.Override(new(stmgr.UpgradeSchedule), stmgr.UpgradeSchedule{{
+				// prepare for upgrade.
+				Network:   network.Version9,
+				Height:    1,
+				Migration: stmgr.UpgradeActorsV2,
+			}, {
+				Network:   network.Version10,
+				Height:    2,
+				Migration: stmgr.UpgradeActorsV3,
+			}, {
+				Network:   network.Version12,
+				Height:    upgradeHeight,
+				Migration: stmgr.UpgradeActorsV4,
+			}})
+		},
+	}
+}
+
 var MineNext = miner.MineReq{
 	InjectNulls: 0,
 	Done:        func(bool, abi.ChainEpoch, error) {},
 }
 
 func (ts *testSuite) testVersion(t *testing.T) {
-	api.RunningNodeType = api.NodeFull
+	lapi.RunningNodeType = lapi.NodeFull
 	t.Cleanup(func() {
-		api.RunningNodeType = api.NodeUnknown
+		lapi.RunningNodeType = lapi.NodeUnknown
 	})
 
 	ctx := context.Background()
@@ -214,7 +245,7 @@ func (ts *testSuite) testSearchMsg(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, err := api.StateWaitMsg(ctx, sm.Cid(), 1)
+	res, err := api.StateWaitMsg(ctx, sm.Cid(), 1, lapi.LookbackNoLimit, true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -222,7 +253,7 @@ func (ts *testSuite) testSearchMsg(t *testing.T) {
 		t.Fatal("did not successfully send message")
 	}
 
-	searchRes, err := api.StateSearchMsg(ctx, sm.Cid())
+	searchRes, err := api.StateSearchMsg(ctx, types.EmptyTSK, sm.Cid(), lapi.LookbackNoLimit, true)
 	if err != nil {
 		t.Fatal(err)
 	}

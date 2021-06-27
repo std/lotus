@@ -155,11 +155,6 @@ func (sm *StateManager) CallWithGas(ctx context.Context, msg *types.Message, pri
 		return nil, xerrors.Errorf("computing tipset state: %w", err)
 	}
 
-	state, err = sm.handleStateForks(ctx, state, ts.Height(), nil, ts)
-	if err != nil {
-		return nil, fmt.Errorf("failed to handle fork: %w", err)
-	}
-
 	r := store.NewChainRand(sm.cs, ts.Cids())
 
 	if span.IsRecordingEvents() {
@@ -172,7 +167,7 @@ func (sm *StateManager) CallWithGas(ctx context.Context, msg *types.Message, pri
 
 	vmopt := &vm.VMOpts{
 		StateBase:      state,
-		Epoch:          ts.Height() + 1,
+		Epoch:          ts.Height(),
 		Rand:           r,
 		Bstore:         sm.cs.StateBlockstore(),
 		Syscalls:       sm.cs.VMSys(),
@@ -255,7 +250,7 @@ func (sm *StateManager) Replay(ctx context.Context, ts *types.TipSet, mcid cid.C
 		}
 		return nil
 	})
-	if err != nil && err != errHaltExecution {
+	if err != nil && !xerrors.Is(err, errHaltExecution) {
 		return nil, nil, xerrors.Errorf("unexpected error during execution: %w", err)
 	}
 

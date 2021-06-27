@@ -38,6 +38,7 @@ var (
 	MessageTo, _    = tag.NewKey("message_to")
 	MessageNonce, _ = tag.NewKey("message_nonce")
 	ReceivedFrom, _ = tag.NewKey("received_from")
+	MsgValid, _     = tag.NewKey("message_valid")
 	Endpoint, _     = tag.NewKey("endpoint")
 	APIInterface, _ = tag.NewKey("api") // to distinguish between gateway api and full node api endpoint calls
 
@@ -61,6 +62,12 @@ var (
 	MessageReceived                     = stats.Int64("message/received", "Counter for total received messages", stats.UnitDimensionless)
 	MessageValidationFailure            = stats.Int64("message/failure", "Counter for message validation failures", stats.UnitDimensionless)
 	MessageValidationSuccess            = stats.Int64("message/success", "Counter for message validation successes", stats.UnitDimensionless)
+	MessageValidationDuration           = stats.Float64("message/validation_ms", "Duration of message validation", stats.UnitMilliseconds)
+	MpoolGetNonceDuration               = stats.Float64("mpool/getnonce_ms", "Duration of getStateNonce in mpool", stats.UnitMilliseconds)
+	MpoolGetBalanceDuration             = stats.Float64("mpool/getbalance_ms", "Duration of getStateBalance in mpool", stats.UnitMilliseconds)
+	MpoolAddTsDuration                  = stats.Float64("mpool/addts_ms", "Duration of addTs in mpool", stats.UnitMilliseconds)
+	MpoolAddDuration                    = stats.Float64("mpool/add_ms", "Duration of Add in mpool", stats.UnitMilliseconds)
+	MpoolPushDuration                   = stats.Float64("mpool/push_ms", "Duration of Push in mpool", stats.UnitMilliseconds)
 	BlockPublished                      = stats.Int64("block/published", "Counter for total locally published blocks", stats.UnitDimensionless)
 	BlockReceived                       = stats.Int64("block/received", "Counter for total received blocks", stats.UnitDimensionless)
 	BlockValidationFailure              = stats.Int64("block/failure", "Counter for block validation failures", stats.UnitDimensionless)
@@ -76,6 +83,13 @@ var (
 	PubsubDropRPC                       = stats.Int64("pubsub/drop_rpc", "Counter for total dropped RPCs", stats.UnitDimensionless)
 	VMFlushCopyDuration                 = stats.Float64("vm/flush_copy_ms", "Time spent in VM Flush Copy", stats.UnitMilliseconds)
 	VMFlushCopyCount                    = stats.Int64("vm/flush_copy_count", "Number of copied objects", stats.UnitDimensionless)
+	VMApplyBlocksTotal                  = stats.Float64("vm/applyblocks_total_ms", "Time spent applying block state", stats.UnitMilliseconds)
+	VMApplyMessages                     = stats.Float64("vm/applyblocks_messages", "Time spent applying block messages", stats.UnitMilliseconds)
+	VMApplyEarly                        = stats.Float64("vm/applyblocks_early", "Time spent in early apply-blocks (null cron, upgrades)", stats.UnitMilliseconds)
+	VMApplyCron                         = stats.Float64("vm/applyblocks_cron", "Time spent in cron", stats.UnitMilliseconds)
+	VMApplyFlush                        = stats.Float64("vm/applyblocks_flush", "Time spent flushing vm state", stats.UnitMilliseconds)
+	VMSends                             = stats.Int64("vm/sends", "Counter for sends processed by the VM", stats.UnitDimensionless)
+	VMApplied                           = stats.Int64("vm/applied", "Counter for messages (including internal messages) processed by the VM", stats.UnitDimensionless)
 
 	// miner
 	WorkerCallsStarted           = stats.Int64("sealing/worker_calls_started", "Counter of started worker tasks", stats.UnitDimensionless)
@@ -163,6 +177,31 @@ var (
 		Measure:     MessageValidationSuccess,
 		Aggregation: view.Count(),
 	}
+	MessageValidationDurationView = &view.View{
+		Measure:     MessageValidationDuration,
+		Aggregation: defaultMillisecondsDistribution,
+		TagKeys:     []tag.Key{MsgValid, Local},
+	}
+	MpoolGetNonceDurationView = &view.View{
+		Measure:     MpoolGetNonceDuration,
+		Aggregation: defaultMillisecondsDistribution,
+	}
+	MpoolGetBalanceDurationView = &view.View{
+		Measure:     MpoolGetBalanceDuration,
+		Aggregation: defaultMillisecondsDistribution,
+	}
+	MpoolAddTsDurationView = &view.View{
+		Measure:     MpoolAddTsDuration,
+		Aggregation: defaultMillisecondsDistribution,
+	}
+	MpoolAddDurationView = &view.View{
+		Measure:     MpoolAddDuration,
+		Aggregation: defaultMillisecondsDistribution,
+	}
+	MpoolPushDurationView = &view.View{
+		Measure:     MpoolPushDuration,
+		Aggregation: defaultMillisecondsDistribution,
+	}
 	PeerCountView = &view.View{
 		Measure:     PeerCount,
 		Aggregation: view.LastValue(),
@@ -207,6 +246,34 @@ var (
 	VMFlushCopyCountView = &view.View{
 		Measure:     VMFlushCopyCount,
 		Aggregation: view.Sum(),
+	}
+	VMApplyBlocksTotalView = &view.View{
+		Measure:     VMApplyBlocksTotal,
+		Aggregation: defaultMillisecondsDistribution,
+	}
+	VMApplyMessagesView = &view.View{
+		Measure:     VMApplyMessages,
+		Aggregation: defaultMillisecondsDistribution,
+	}
+	VMApplyEarlyView = &view.View{
+		Measure:     VMApplyEarly,
+		Aggregation: defaultMillisecondsDistribution,
+	}
+	VMApplyCronView = &view.View{
+		Measure:     VMApplyCron,
+		Aggregation: defaultMillisecondsDistribution,
+	}
+	VMApplyFlushView = &view.View{
+		Measure:     VMApplyFlush,
+		Aggregation: defaultMillisecondsDistribution,
+	}
+	VMSendsView = &view.View{
+		Measure:     VMSends,
+		Aggregation: view.LastValue(),
+	}
+	VMAppliedView = &view.View{
+		Measure:     VMApplied,
+		Aggregation: view.LastValue(),
 	}
 
 	// miner
@@ -278,6 +345,12 @@ var ChainNodeViews = append([]*view.View{
 	MessageReceivedView,
 	MessageValidationFailureView,
 	MessageValidationSuccessView,
+	MessageValidationDurationView,
+	MpoolGetNonceDurationView,
+	MpoolGetBalanceDurationView,
+	MpoolAddTsDurationView,
+	MpoolAddDurationView,
+	MpoolPushDurationView,
 	PubsubPublishMessageView,
 	PubsubDeliverMessageView,
 	PubsubRejectMessageView,
@@ -292,6 +365,13 @@ var ChainNodeViews = append([]*view.View{
 	SplitstoreCompactionHotView,
 	SplitstoreCompactionColdView,
 	SplitstoreCompactionDeadView,
+	VMApplyBlocksTotalView,
+	VMApplyMessagesView,
+	VMApplyEarlyView,
+	VMApplyCronView,
+	VMApplyFlushView,
+	VMSendsView,
+	VMAppliedView,
 }, DefaultViews...)
 
 var MinerNodeViews = append([]*view.View{

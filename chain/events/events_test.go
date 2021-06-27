@@ -54,7 +54,7 @@ func (fcs *fakeCS) ChainGetTipSet(ctx context.Context, key types.TipSetKey) (*ty
 	return fcs.tipsets[key], nil
 }
 
-func (fcs *fakeCS) StateGetReceipt(context.Context, cid.Cid, types.TipSetKey) (*types.MessageReceipt, error) {
+func (fcs *fakeCS) StateSearchMsg(ctx context.Context, from types.TipSetKey, msg cid.Cid, limit abi.ChainEpoch, allowReplaced bool) (*api.MsgLookup, error) {
 	return nil, nil
 }
 
@@ -229,7 +229,7 @@ func (fcs *fakeCS) notifDone() {
 	fcs.sync.Unlock()
 }
 
-var _ eventAPI = &fakeCS{}
+var _ EventAPI = &fakeCS{}
 
 func TestAt(t *testing.T) {
 	fcs := &fakeCS{
@@ -1322,4 +1322,63 @@ func TestStateChangedTimeout(t *testing.T) {
 
 	fcs.advance(0, 5, nil)
 	require.False(t, called)
+}
+
+func TestCalledMultiplePerEpoch(t *testing.T) {
+	fcs := &fakeCS{
+		t: t,
+		h: 1,
+
+		msgs:    map[cid.Cid]fakeMsg{},
+		blkMsgs: map[cid.Cid]cid.Cid{},
+		tsc:     newTSCache(2*build.ForkLengthThreshold, nil),
+	}
+	require.NoError(t, fcs.tsc.add(fcs.makeTs(t, nil, 1, dummyCid)))
+
+	events := NewEvents(context.Background(), fcs)
+
+	t0123, err := address.NewFromString("t0123")
+	require.NoError(t, err)
+
+	at := 0
+
+	err = events.Called(func(ts *types.TipSet) (d bool, m bool, e error) {
+		return false, true, nil
+	}, func(msg *types.Message, rec *types.MessageReceipt, ts *types.TipSet, curH abi.ChainEpoch) (bool, error) {
+		switch at {
+		case 0:
+			require.Equal(t, uint64(1), msg.Nonce)
+			require.Equal(t, abi.ChainEpoch(4), ts.Height())
+		case 1:
+			require.Equal(t, uint64(2), msg.Nonce)
+			require.Equal(t, abi.ChainEpoch(4), ts.Height())
+		default:
+			t.Fatal("apply should only get called twice, at: ", at)
+		}
+		at++
+		return true, nil
+	}, func(_ context.Context, ts *types.TipSet) error {
+		switch at {
+		case 2:
+			require.Equal(t, abi.ChainEpoch(4), ts.Height())
+		case 3:
+			require.Equal(t, abi.ChainEpoch(4), ts.Height())
+		default:
+			t.Fatal("revert should only get called twice, at: ", at)
+		}
+		at++
+		return nil
+	}, 3, 20, matchAddrMethod(t0123, 5))
+	require.NoError(t, err)
+
+	fcs.advance(0, 10, map[int]cid.Cid{
+		1: fcs.fakeMsgs(fakeMsg{
+			bmsgs: []*types.Message{
+				{To: t0123, From: t0123, Method: 5, Nonce: 1},
+				{To: t0123, From: t0123, Method: 5, Nonce: 2},
+			},
+		}),
+	})
+
+	fcs.advance(9, 1, nil)
 }

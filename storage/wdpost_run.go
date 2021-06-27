@@ -313,7 +313,7 @@ func (s *WindowPoStScheduler) checkNextRecoveries(ctx context.Context, dlIdx uin
 
 	log.Warnw("declare faults recovered Message CID", "cid", sm.Cid())
 
-	rec, err := s.api.StateWaitMsg(context.TODO(), sm.Cid(), build.MessageConfidence)
+	rec, err := s.api.StateWaitMsg(context.TODO(), sm.Cid(), build.MessageConfidence, api.LookbackNoLimit, true)
 	if err != nil {
 		return recoveries, sm, xerrors.Errorf("declare faults recovered wait error: %w", err)
 	}
@@ -398,7 +398,7 @@ func (s *WindowPoStScheduler) checkNextFaults(ctx context.Context, dlIdx uint64,
 
 	log.Warnw("declare faults Message CID", "cid", sm.Cid())
 
-	rec, err := s.api.StateWaitMsg(context.TODO(), sm.Cid(), build.MessageConfidence)
+	rec, err := s.api.StateWaitMsg(context.TODO(), sm.Cid(), build.MessageConfidence, api.LookbackNoLimit, true)
 	if err != nil {
 		return faults, sm, xerrors.Errorf("declare faults wait error: %w", err)
 	}
@@ -497,9 +497,14 @@ func (s *WindowPoStScheduler) runPost(ctx context.Context, di dline.Info, ts *ty
 		return nil, xerrors.Errorf("getting partitions: %w", err)
 	}
 
+	nv, err := s.api.StateNetworkVersion(ctx, ts.Key())
+	if err != nil {
+		return nil, xerrors.Errorf("getting network version: %w", err)
+	}
+
 	// Split partitions into batches, so as not to exceed the number of sectors
 	// allowed in a single message
-	partitionBatches, err := s.batchPartitions(partitions)
+	partitionBatches, err := s.batchPartitions(partitions, nv)
 	if err != nil {
 		return nil, err
 	}
@@ -679,7 +684,7 @@ func (s *WindowPoStScheduler) runPost(ctx context.Context, di dline.Info, ts *ty
 	return posts, nil
 }
 
-func (s *WindowPoStScheduler) batchPartitions(partitions []api.Partition) ([][]api.Partition, error) {
+func (s *WindowPoStScheduler) batchPartitions(partitions []api.Partition, nv network.Version) ([][]api.Partition, error) {
 	// We don't want to exceed the number of sectors allowed in a message.
 	// So given the number of sectors in a partition, work out the number of
 	// partitions that can be in a message without exceeding sectors per
@@ -690,9 +695,14 @@ func (s *WindowPoStScheduler) batchPartitions(partitions []api.Partition) ([][]a
 	// sectors per partition    3:  ooo
 	// partitions per message   2:  oooOOO
 	//                              <1><2> (3rd doesn't fit)
-	partitionsPerMsg, err := policy.GetMaxPoStPartitions(s.proofType)
+	partitionsPerMsg, err := policy.GetMaxPoStPartitions(nv, s.proofType)
 	if err != nil {
 		return nil, xerrors.Errorf("getting sectors per partition: %w", err)
+	}
+
+	// Also respect the AddressedPartitionsMax (which is the same as DeclarationsMax (which is all really just MaxPartitionsPerDeadline))
+	if partitionsPerMsg > policy.GetDeclarationsMax(nv) {
+		partitionsPerMsg = policy.GetDeclarationsMax(nv)
 	}
 
 	// The number of messages will be:
@@ -787,7 +797,7 @@ func (s *WindowPoStScheduler) submitPost(ctx context.Context, proof *miner.Submi
 	log.Infof("Submitted window post: %s", sm.Cid())
 
 	go func() {
-		rec, err := s.api.StateWaitMsg(context.TODO(), sm.Cid(), build.MessageConfidence)
+		rec, err := s.api.StateWaitMsg(context.TODO(), sm.Cid(), build.MessageConfidence, api.LookbackNoLimit, true)
 		if err != nil {
 			log.Error(err)
 			return

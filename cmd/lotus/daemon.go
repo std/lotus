@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -231,7 +232,7 @@ var DaemonCmd = &cli.Command{
 		freshRepo := err != repo.ErrRepoExists
 
 		if !isLite {
-			if err := paramfetch.GetParams(lcli.ReqContext(cctx), build.ParametersJSON(), 0); err != nil {
+			if err := paramfetch.GetParams(lcli.ReqContext(cctx), build.ParametersJSON(), build.SrsJSON(), 0); err != nil {
 				return xerrors.Errorf("fetching proof parameters: %w", err)
 			}
 		}
@@ -289,7 +290,7 @@ var DaemonCmd = &cli.Command{
 
 		shutdownChan := make(chan struct{})
 
-		// If the daemon is started in "lite mode", provide a  GatewayAPI
+		// If the daemon is started in "lite mode", provide a  Gateway
 		// for RPC calls
 		liteModeDeps := node.Options()
 		if isLite {
@@ -299,7 +300,7 @@ var DaemonCmd = &cli.Command{
 			}
 
 			defer closer()
-			liteModeDeps = node.Override(new(api.GatewayAPI), gapi)
+			liteModeDeps = node.Override(new(api.Gateway), gapi)
 		}
 
 		// some libraries like ipfs/go-ds-measure and ipfs/go-ipfs-blockstore

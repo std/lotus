@@ -42,7 +42,7 @@ BUILD_DEPS+=build/.filecoin-install
 CLEAN+=build/.filecoin-install
 
 ffi-version-check:
-	@[[ "$$(awk '/const Version/{print $$5}' extern/filecoin-ffi/version.go)" -eq 2 ]] || (echo "FFI version mismatch, update submodules"; exit 1)
+	@[[ "$$(awk '/const Version/{print $$5}' extern/filecoin-ffi/version.go)" -eq 3 ]] || (echo "FFI version mismatch, update submodules"; exit 1)
 BUILD_DEPS+=ffi-version-check
 
 .PHONY: ffi-version-check
@@ -236,6 +236,13 @@ testground:
 .PHONY: testground
 BINS+=testground
 
+
+tvx:
+	rm -f tvx
+	go build -o tvx ./cmd/tvx
+.PHONY: tvx
+BINS+=tvx
+
 install-chainwatch: lotus-chainwatch
 	install -C ./lotus-chainwatch /usr/local/bin/lotus-chainwatch
 
@@ -321,19 +328,65 @@ dist-clean:
 	git submodule deinit --all -f
 .PHONY: dist-clean
 
-type-gen:
+type-gen: api-gen
 	go run ./gen/main.go
-	go generate ./...
+	go generate -x ./...
+	goimports -w api/
 
-method-gen:
+method-gen: api-gen
 	(cd ./lotuspond/front/src/chain && go run ./methodgen.go)
 
-gen: type-gen method-gen
+actors-gen:
+	go run ./chain/actors/agen
+	go fmt ./...
 
-docsgen:
-	go run ./api/docgen "api/api_full.go" "FullNode" > documentation/en/api-methods.md
-	go run ./api/docgen "api/api_storage.go" "StorageMiner" > documentation/en/api-methods-miner.md
-	go run ./api/docgen "api/api_worker.go" "WorkerAPI" > documentation/en/api-methods-worker.md
+api-gen:
+	go run ./gen/api
+	goimports -w api
+	goimports -w api
+.PHONY: api-gen
+
+appimage: $(BUILD_DEPS)
+	rm -rf appimage-builder-cache || true
+	rm AppDir/io.filecoin.lotus.desktop || true
+	rm AppDir/icon.svg || true
+	rm Appdir/AppRun || true
+	mkdir -p AppDir/usr/bin
+	rm -rf lotus
+	go run github.com/GeertJohan/go.rice/rice embed-go -i ./build
+	go build $(GOFLAGS) -o lotus ./cmd/lotus
+	cp ./lotus AppDir/usr/bin/
+	appimage-builder
+docsgen: docsgen-md docsgen-openrpc
+
+docsgen-md-bin: api-gen actors-gen
+	go build $(GOFLAGS) -o docgen-md ./api/docgen/cmd
+docsgen-openrpc-bin: api-gen actors-gen
+	go build $(GOFLAGS) -o docgen-openrpc ./api/docgen-openrpc/cmd
+
+docsgen-md: docsgen-md-full docsgen-md-storage docsgen-md-worker
+
+docsgen-md-full: docsgen-md-bin
+	./docgen-md "api/api_full.go" "FullNode" "api" "./api" > documentation/en/api-v1-unstable-methods.md
+	./docgen-md "api/v0api/full.go" "FullNode" "v0api" "./api/v0api" > documentation/en/api-v0-methods.md
+docsgen-md-storage: docsgen-md-bin
+	./docgen-md "api/api_storage.go" "StorageMiner" "api" "./api" > documentation/en/api-v0-methods-miner.md
+docsgen-md-worker: docsgen-md-bin
+	./docgen-md "api/api_worker.go" "Worker" "api" "./api" > documentation/en/api-v0-methods-worker.md
+
+docsgen-openrpc: docsgen-openrpc-full docsgen-openrpc-storage docsgen-openrpc-worker
+
+docsgen-openrpc-full: docsgen-openrpc-bin
+	./docgen-openrpc "api/api_full.go" "FullNode" "api" "./api" -gzip > build/openrpc/full.json.gz
+docsgen-openrpc-storage: docsgen-openrpc-bin
+	./docgen-openrpc "api/api_storage.go" "StorageMiner" "api" "./api" -gzip > build/openrpc/miner.json.gz
+docsgen-openrpc-worker: docsgen-openrpc-bin
+	./docgen-openrpc "api/api_worker.go" "Worker" "api" "./api" -gzip > build/openrpc/worker.json.gz
+
+.PHONY: docsgen docsgen-md-bin docsgen-openrpc-bin
+
+gen: actors-gen type-gen method-gen docsgen api-gen
+.PHONY: gen
 
 print-%:
 	@echo $*=$($*)

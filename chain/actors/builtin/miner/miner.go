@@ -3,9 +3,7 @@ package miner
 import (
 	"github.com/filecoin-project/go-state-types/big"
 	"github.com/filecoin-project/go-state-types/network"
-	"github.com/filecoin-project/lotus/chain/types"
 	"github.com/ipfs/go-cid"
-	//cid "github.com/ipfs/go-cid/_rsrch/cidiface"
 	"github.com/libp2p/go-libp2p-core/peer"
 	cbg "github.com/whyrusleeping/cbor-gen"
 	"golang.org/x/xerrors"
@@ -18,31 +16,48 @@ import (
 
 	"github.com/filecoin-project/lotus/chain/actors/adt"
 	"github.com/filecoin-project/lotus/chain/actors/builtin"
-	builtin0 "github.com/filecoin-project/specs-actors/actors/builtin"
+	"github.com/filecoin-project/lotus/chain/types"
+
 	miner0 "github.com/filecoin-project/specs-actors/actors/builtin/miner"
-	builtin2 "github.com/filecoin-project/specs-actors/v2/actors/builtin"
 	miner2 "github.com/filecoin-project/specs-actors/v2/actors/builtin/miner"
-	builtin3 "github.com/filecoin-project/specs-actors/v3/actors/builtin"
 	miner3 "github.com/filecoin-project/specs-actors/v3/actors/builtin/miner"
+
+	builtin0 "github.com/filecoin-project/specs-actors/actors/builtin"
+
+	builtin2 "github.com/filecoin-project/specs-actors/v2/actors/builtin"
+
+	builtin3 "github.com/filecoin-project/specs-actors/v3/actors/builtin"
+
 	builtin4 "github.com/filecoin-project/specs-actors/v4/actors/builtin"
+
+	builtin5 "github.com/filecoin-project/specs-actors/v5/actors/builtin"
 )
 
 func init() {
+
 	builtin.RegisterActorState(builtin0.StorageMinerActorCodeID, func(store adt.Store, root cid.Cid) (cbor.Marshaler, error) {
 		return load0(store, root)
 	})
+
 	builtin.RegisterActorState(builtin2.StorageMinerActorCodeID, func(store adt.Store, root cid.Cid) (cbor.Marshaler, error) {
 		return load2(store, root)
 	})
+
 	builtin.RegisterActorState(builtin3.StorageMinerActorCodeID, func(store adt.Store, root cid.Cid) (cbor.Marshaler, error) {
 		return load3(store, root)
 	})
+
 	builtin.RegisterActorState(builtin4.StorageMinerActorCodeID, func(store adt.Store, root cid.Cid) (cbor.Marshaler, error) {
 		return load4(store, root)
 	})
+
+	builtin.RegisterActorState(builtin5.StorageMinerActorCodeID, func(store adt.Store, root cid.Cid) (cbor.Marshaler, error) {
+		return load5(store, root)
+	})
+
 }
 
-var Methods = builtin4.MethodsMiner
+var Methods = builtin5.MethodsMiner
 
 // Unchanged between v0, v2, v3, and v4 actors
 var WPoStProvingPeriod = miner0.WPoStProvingPeriod
@@ -58,16 +73,24 @@ const MinSectorExpiration = miner0.MinSectorExpiration
 var DeclarationsMax = miner2.DeclarationsMax
 var AddressedSectorsMax = miner2.AddressedSectorsMax
 
-func Load(store adt.Store, act *types.Actor) (st State, err error) {
+func Load(store adt.Store, act *types.Actor) (State, error) {
 	switch act.Code {
+
 	case builtin0.StorageMinerActorCodeID:
 		return load0(store, act.Head)
+
 	case builtin2.StorageMinerActorCodeID:
 		return load2(store, act.Head)
+
 	case builtin3.StorageMinerActorCodeID:
 		return load3(store, act.Head)
+
 	case builtin4.StorageMinerActorCodeID:
 		return load4(store, act.Head)
+
+	case builtin5.StorageMinerActorCodeID:
+		return load5(store, act.Head)
+
 	}
 	return nil, xerrors.Errorf("unknown actor code %s", act.Code)
 }
@@ -107,8 +130,6 @@ type State interface {
 	decodeSectorOnChainInfo(*cbg.Deferred) (SectorOnChainInfo, error)
 	precommits() (adt.Map, error)
 	decodeSectorPreCommitOnChainInfo(*cbg.Deferred) (SectorPreCommitOnChainInfo, error)
-
-	//LoadVestingFunds(store adt.Store) (*miner.VestingFund, error)
 }
 
 type Deadline interface {
