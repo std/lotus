@@ -32,9 +32,9 @@ func (t *State) MarshalCBOR(w io.Writer) error {
 
 	scratch := make([]byte, 9)
 
-	// t.Amount (string) (string)
+	// t.Value (string) (string)
 	if len(t.Value) > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field t.Amount was too long")
+		return xerrors.Errorf("Value in field t.Value was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len(t.Value))); err != nil {
@@ -78,7 +78,7 @@ func (t *State) UnmarshalCBOR(r io.Reader) error {
 		return fmt.Errorf("cbor input had wrong number of fields")
 	}
 
-	// t.Amount (string) (string)
+	// t.Value (string) (string)
 
 	{
 		sval, err := cbg.ReadStringBuf(br, scratch)
@@ -477,7 +477,7 @@ func (t *SendArgs) MarshalCBOR(w io.Writer) error {
 		return err
 	}
 
-	// t.Amount (big.Int) (struct)
+	// t.Value (big.Int) (struct)
 	if err := t.Value.MarshalCBOR(w); err != nil {
 		return err
 	}
@@ -530,12 +530,12 @@ func (t *SendArgs) UnmarshalCBOR(r io.Reader) error {
 		}
 
 	}
-	// t.Amount (big.Int) (struct)
+	// t.Value (big.Int) (struct)
 
 	{
 
 		if err := t.Value.UnmarshalCBOR(br); err != nil {
-			return xerrors.Errorf("unmarshaling t.Amount: %w", err)
+			return xerrors.Errorf("unmarshaling t.Value: %w", err)
 		}
 
 	}
@@ -696,9 +696,9 @@ func (t *MutateStateArgs) MarshalCBOR(w io.Writer) error {
 
 	scratch := make([]byte, 9)
 
-	// t.Amount (string) (string)
+	// t.Value (string) (string)
 	if len(t.Value) > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field t.Amount was too long")
+		return xerrors.Errorf("Value in field t.Value was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len(t.Value))); err != nil {
@@ -739,7 +739,7 @@ func (t *MutateStateArgs) UnmarshalCBOR(r io.Reader) error {
 		return fmt.Errorf("cbor input had wrong number of fields")
 	}
 
-	// t.Amount (string) (string)
+	// t.Value (string) (string)
 
 	{
 		sval, err := cbg.ReadStringBuf(br, scratch)
@@ -803,7 +803,7 @@ func (t *AbortWithArgs) MarshalCBOR(w io.Writer) error {
 
 	// t.Message (string) (string)
 	if len(t.Message) > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field t.Message was too long")
+		return xerrors.Errorf("Value in field t.Message was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len(t.Message))); err != nil {

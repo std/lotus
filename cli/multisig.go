@@ -299,7 +299,7 @@ var msigInspectCmd = &cli.Command{
 			})
 
 			w := tabwriter.NewWriter(cctx.App.Writer, 8, 4, 2, ' ', 0)
-			fmt.Fprintf(w, "ID\tState\tApprovals\tTo\tAmount\tMethod\tParams\n")
+			fmt.Fprintf(w, "ID\tState\tApprovals\tTo\tValue\tMethod\tParams\n")
 			for _, txid := range txids {
 				tx := pending[txid]
 				target := tx.To.String()
@@ -451,7 +451,7 @@ var msigProposeCmd = &cli.Command{
 		if retval.Applied {
 			fmt.Printf("Transaction was executed during propose\n")
 			fmt.Printf("Exit Code: %d\n", retval.Code)
-			fmt.Printf("Return Amount: %x\n", retval.Ret)
+			fmt.Printf("Return Value: %x\n", retval.Ret)
 		}
 
 		return nil

@@ -87,7 +87,7 @@ func (c *InteractiveWallet) WalletSign(ctx context.Context, k address.Address, m
 
 			fmt.Println("Message JSON:", string(jb))
 
-			fmt.Println("Amount:", types.FIL(cmsg.Value))
+			fmt.Println("Value:", types.FIL(cmsg.Value))
 			fmt.Println("Max Fees:", types.FIL(cmsg.RequiredFunds()))
 			fmt.Println("Max Total Cost:", types.FIL(big.Add(cmsg.RequiredFunds(), cmsg.Value)))
 
@@ -117,7 +117,7 @@ func (c *InteractiveWallet) WalletSign(ctx context.Context, k address.Address, m
 						return xerrors.Errorf("unmarshalling multisig propose params: %w", err)
 					}
 
-					fmt.Println("\tMultiSig Proposal Amount:", types.FIL(mp.Value))
+					fmt.Println("\tMultiSig Proposal Value:", types.FIL(mp.Value))
 					fmt.Println("\tMultiSig Proposal Hex Params:", hex.EncodeToString(mp.Params))
 
 					toact, err := napi.StateGetActor(ctx, mp.To, types.EmptyTSK)

@@ -460,7 +460,6 @@ func (rt *Runtime) StateReadonly(obj cbor.Unmarshaler) {
 	if err != nil {
 		rt.Abortf(exitcode.SysErrorIllegalArgument, "failed to get actor for Readonly state: %s", err)
 	}
-
 	rt.StoreGet(act.Head, obj)
 }
 

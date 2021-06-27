@@ -46,7 +46,6 @@ const MaxCallDepth = 4096
 var (
 	log            = logging.Logger("vm")
 	actorLog       = logging.Logger("actors")
-
 	gasOnActorExec = newGasCharge("OnActorExec", 0, 0)
 )
 
@@ -435,7 +434,7 @@ func (vm *VM) ApplyImplicitMessage(ctx context.Context, msg *types.Message) (*Ap
 
 func (vm *VM) ApplyMessage(ctx context.Context, cmsg types.ChainMsg) (*ApplyRet, error) {
 	start := build.Clock.Now()
-	ctx, span := trace.StartSpan(ctx, "vm.StartMessage")
+	ctx, span := trace.StartSpan(ctx, "vm.ApplyMessage")
 	defer span.End()
 	defer atomic.AddUint64(&StatApplied, 1)
 	msg := cmsg.VMMessage()

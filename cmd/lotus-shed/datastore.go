@@ -198,7 +198,7 @@ var datastoreBackupStatCmd = &cli.Command{
 		fmt.Println("Keys:        ", keys)
 		fmt.Println("Log values:  ", log)
 		fmt.Println("Key bytes:   ", units.BytesSize(float64(kbytes)))
-		fmt.Println("Amount bytes: ", units.BytesSize(float64(vbytes)))
+		fmt.Println("Value bytes: ", units.BytesSize(float64(vbytes)))
 
 		return err
 	},

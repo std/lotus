@@ -32,7 +32,7 @@ func (t *Piece) MarshalCBOR(w io.Writer) error {
 
 	// t.Piece (abi.PieceInfo) (struct)
 	if len("Piece") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"Piece\" was too long")
+		return xerrors.Errorf("Value in field \"Piece\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("Piece"))); err != nil {
@@ -48,7 +48,7 @@ func (t *Piece) MarshalCBOR(w io.Writer) error {
 
 	// t.DealInfo (sealing.DealInfo) (struct)
 	if len("DealInfo") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"DealInfo\" was too long")
+		return xerrors.Errorf("Value in field \"DealInfo\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("DealInfo"))); err != nil {
@@ -149,7 +149,7 @@ func (t *DealInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.PublishCid (cid.Cid) (struct)
 	if len("PublishCid") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"PublishCid\" was too long")
+		return xerrors.Errorf("Value in field \"PublishCid\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("PublishCid"))); err != nil {
@@ -171,7 +171,7 @@ func (t *DealInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.DealID (abi.DealID) (uint64)
 	if len("DealID") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"DealID\" was too long")
+		return xerrors.Errorf("Value in field \"DealID\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("DealID"))); err != nil {
@@ -187,7 +187,7 @@ func (t *DealInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.DealProposal (market.DealProposal) (struct)
 	if len("DealProposal") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"DealProposal\" was too long")
+		return xerrors.Errorf("Value in field \"DealProposal\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("DealProposal"))); err != nil {
@@ -203,7 +203,7 @@ func (t *DealInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.DealSchedule (sealing.DealSchedule) (struct)
 	if len("DealSchedule") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"DealSchedule\" was too long")
+		return xerrors.Errorf("Value in field \"DealSchedule\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("DealSchedule"))); err != nil {
@@ -219,7 +219,7 @@ func (t *DealInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.KeepUnsealed (bool) (bool)
 	if len("KeepUnsealed") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"KeepUnsealed\" was too long")
+		return xerrors.Errorf("Value in field \"KeepUnsealed\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("KeepUnsealed"))); err != nil {
@@ -376,7 +376,7 @@ func (t *DealSchedule) MarshalCBOR(w io.Writer) error {
 
 	// t.StartEpoch (abi.ChainEpoch) (int64)
 	if len("StartEpoch") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"StartEpoch\" was too long")
+		return xerrors.Errorf("Value in field \"StartEpoch\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("StartEpoch"))); err != nil {
@@ -398,7 +398,7 @@ func (t *DealSchedule) MarshalCBOR(w io.Writer) error {
 
 	// t.EndEpoch (abi.ChainEpoch) (int64)
 	if len("EndEpoch") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"EndEpoch\" was too long")
+		return xerrors.Errorf("Value in field \"EndEpoch\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("EndEpoch"))); err != nil {
@@ -527,7 +527,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.State (sealing.SectorState) (string)
 	if len("State") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"State\" was too long")
+		return xerrors.Errorf("Value in field \"State\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("State"))); err != nil {
@@ -538,7 +538,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 	}
 
 	if len(t.State) > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field t.State was too long")
+		return xerrors.Errorf("Value in field t.State was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len(t.State))); err != nil {
@@ -550,7 +550,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.SectorNumber (abi.SectorNumber) (uint64)
 	if len("SectorNumber") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"SectorNumber\" was too long")
+		return xerrors.Errorf("Value in field \"SectorNumber\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("SectorNumber"))); err != nil {
@@ -566,7 +566,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.SectorType (abi.RegisteredSealProof) (int64)
 	if len("SectorType") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"SectorType\" was too long")
+		return xerrors.Errorf("Value in field \"SectorType\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("SectorType"))); err != nil {
@@ -588,7 +588,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.CreationTime (int64) (int64)
 	if len("CreationTime") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"CreationTime\" was too long")
+		return xerrors.Errorf("Value in field \"CreationTime\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("CreationTime"))); err != nil {
@@ -610,7 +610,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.Pieces ([]sealing.Piece) (slice)
 	if len("Pieces") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"Pieces\" was too long")
+		return xerrors.Errorf("Value in field \"Pieces\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("Pieces"))); err != nil {
@@ -635,7 +635,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.TicketValue (abi.SealRandomness) (slice)
 	if len("TicketValue") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"TicketValue\" was too long")
+		return xerrors.Errorf("Value in field \"TicketValue\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("TicketValue"))); err != nil {
@@ -659,7 +659,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.TicketEpoch (abi.ChainEpoch) (int64)
 	if len("TicketEpoch") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"TicketEpoch\" was too long")
+		return xerrors.Errorf("Value in field \"TicketEpoch\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("TicketEpoch"))); err != nil {
@@ -681,7 +681,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.PreCommit1Out (storage.PreCommit1Out) (slice)
 	if len("PreCommit1Out") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"PreCommit1Out\" was too long")
+		return xerrors.Errorf("Value in field \"PreCommit1Out\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("PreCommit1Out"))); err != nil {
@@ -705,7 +705,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.CommD (cid.Cid) (struct)
 	if len("CommD") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"CommD\" was too long")
+		return xerrors.Errorf("Value in field \"CommD\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("CommD"))); err != nil {
@@ -727,7 +727,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.CommR (cid.Cid) (struct)
 	if len("CommR") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"CommR\" was too long")
+		return xerrors.Errorf("Value in field \"CommR\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("CommR"))); err != nil {
@@ -749,7 +749,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.Proof ([]uint8) (slice)
 	if len("Proof") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"Proof\" was too long")
+		return xerrors.Errorf("Value in field \"Proof\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("Proof"))); err != nil {
@@ -771,15 +771,15 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 		return err
 	}
 
-	// t.GetSectorPreCommitOnChainInfo (miner.SectorPreCommitInfo) (struct)
-	if len("GetSectorPreCommitOnChainInfo") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"GetSectorPreCommitOnChainInfo\" was too long")
+	// t.PreCommitInfo (miner.SectorPreCommitInfo) (struct)
+	if len("PreCommitInfo") > cbg.MaxLength {
+		return xerrors.Errorf("Value in field \"PreCommitInfo\" was too long")
 	}
 
-	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("GetSectorPreCommitOnChainInfo"))); err != nil {
+	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("PreCommitInfo"))); err != nil {
 		return err
 	}
-	if _, err := io.WriteString(w, string("GetSectorPreCommitOnChainInfo")); err != nil {
+	if _, err := io.WriteString(w, string("PreCommitInfo")); err != nil {
 		return err
 	}
 
@@ -789,7 +789,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.PreCommitDeposit (big.Int) (struct)
 	if len("PreCommitDeposit") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"PreCommitDeposit\" was too long")
+		return xerrors.Errorf("Value in field \"PreCommitDeposit\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("PreCommitDeposit"))); err != nil {
@@ -805,7 +805,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.PreCommitMessage (cid.Cid) (struct)
 	if len("PreCommitMessage") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"PreCommitMessage\" was too long")
+		return xerrors.Errorf("Value in field \"PreCommitMessage\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("PreCommitMessage"))); err != nil {
@@ -827,7 +827,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.PreCommitTipSet (sealing.TipSetToken) (slice)
 	if len("PreCommitTipSet") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"PreCommitTipSet\" was too long")
+		return xerrors.Errorf("Value in field \"PreCommitTipSet\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("PreCommitTipSet"))); err != nil {
@@ -851,7 +851,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.PreCommit2Fails (uint64) (uint64)
 	if len("PreCommit2Fails") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"PreCommit2Fails\" was too long")
+		return xerrors.Errorf("Value in field \"PreCommit2Fails\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("PreCommit2Fails"))); err != nil {
@@ -867,7 +867,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.SeedValue (abi.InteractiveSealRandomness) (slice)
 	if len("SeedValue") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"SeedValue\" was too long")
+		return xerrors.Errorf("Value in field \"SeedValue\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("SeedValue"))); err != nil {
@@ -891,7 +891,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.SeedEpoch (abi.ChainEpoch) (int64)
 	if len("SeedEpoch") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"SeedEpoch\" was too long")
+		return xerrors.Errorf("Value in field \"SeedEpoch\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("SeedEpoch"))); err != nil {
@@ -913,7 +913,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.CommitMessage (cid.Cid) (struct)
 	if len("CommitMessage") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"CommitMessage\" was too long")
+		return xerrors.Errorf("Value in field \"CommitMessage\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("CommitMessage"))); err != nil {
@@ -935,7 +935,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.InvalidProofs (uint64) (uint64)
 	if len("InvalidProofs") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"InvalidProofs\" was too long")
+		return xerrors.Errorf("Value in field \"InvalidProofs\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("InvalidProofs"))); err != nil {
@@ -951,7 +951,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.FaultReportMsg (cid.Cid) (struct)
 	if len("FaultReportMsg") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"FaultReportMsg\" was too long")
+		return xerrors.Errorf("Value in field \"FaultReportMsg\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("FaultReportMsg"))); err != nil {
@@ -973,7 +973,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.Return (sealing.ReturnState) (string)
 	if len("Return") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"Return\" was too long")
+		return xerrors.Errorf("Value in field \"Return\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("Return"))); err != nil {
@@ -984,7 +984,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 	}
 
 	if len(t.Return) > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field t.Return was too long")
+		return xerrors.Errorf("Value in field t.Return was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len(t.Return))); err != nil {
@@ -996,7 +996,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.TerminateMessage (cid.Cid) (struct)
 	if len("TerminateMessage") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"TerminateMessage\" was too long")
+		return xerrors.Errorf("Value in field \"TerminateMessage\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("TerminateMessage"))); err != nil {
@@ -1018,7 +1018,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.TerminatedAt (abi.ChainEpoch) (int64)
 	if len("TerminatedAt") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"TerminatedAt\" was too long")
+		return xerrors.Errorf("Value in field \"TerminatedAt\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("TerminatedAt"))); err != nil {
@@ -1040,7 +1040,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.LastErr (string) (string)
 	if len("LastErr") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"LastErr\" was too long")
+		return xerrors.Errorf("Value in field \"LastErr\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("LastErr"))); err != nil {
@@ -1051,7 +1051,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 	}
 
 	if len(t.LastErr) > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field t.LastErr was too long")
+		return xerrors.Errorf("Value in field t.LastErr was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len(t.LastErr))); err != nil {
@@ -1063,7 +1063,7 @@ func (t *SectorInfo) MarshalCBOR(w io.Writer) error {
 
 	// t.Log ([]sealing.Log) (slice)
 	if len("Log") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"Log\" was too long")
+		return xerrors.Errorf("Value in field \"Log\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("Log"))); err != nil {
@@ -1367,8 +1367,8 @@ func (t *SectorInfo) UnmarshalCBOR(r io.Reader) error {
 			if _, err := io.ReadFull(br, t.Proof[:]); err != nil {
 				return err
 			}
-			// t.GetSectorPreCommitOnChainInfo (miner.SectorPreCommitInfo) (struct)
-		case "GetSectorPreCommitOnChainInfo":
+			// t.PreCommitInfo (miner.SectorPreCommitInfo) (struct)
+		case "PreCommitInfo":
 
 			{
 
@@ -1382,7 +1382,7 @@ func (t *SectorInfo) UnmarshalCBOR(r io.Reader) error {
 					}
 					t.PreCommitInfo = new(miner.SectorPreCommitInfo)
 					if err := t.PreCommitInfo.UnmarshalCBOR(br); err != nil {
-						return xerrors.Errorf("unmarshaling t.GetSectorPreCommitOnChainInfo pointer: %w", err)
+						return xerrors.Errorf("unmarshaling t.PreCommitInfo pointer: %w", err)
 					}
 				}
 
@@ -1688,7 +1688,7 @@ func (t *Log) MarshalCBOR(w io.Writer) error {
 
 	// t.Timestamp (uint64) (uint64)
 	if len("Timestamp") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"Timestamp\" was too long")
+		return xerrors.Errorf("Value in field \"Timestamp\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("Timestamp"))); err != nil {
@@ -1704,7 +1704,7 @@ func (t *Log) MarshalCBOR(w io.Writer) error {
 
 	// t.Trace (string) (string)
 	if len("Trace") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"Trace\" was too long")
+		return xerrors.Errorf("Value in field \"Trace\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("Trace"))); err != nil {
@@ -1715,7 +1715,7 @@ func (t *Log) MarshalCBOR(w io.Writer) error {
 	}
 
 	if len(t.Trace) > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field t.Trace was too long")
+		return xerrors.Errorf("Value in field t.Trace was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len(t.Trace))); err != nil {
@@ -1727,7 +1727,7 @@ func (t *Log) MarshalCBOR(w io.Writer) error {
 
 	// t.Message (string) (string)
 	if len("Message") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"Message\" was too long")
+		return xerrors.Errorf("Value in field \"Message\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("Message"))); err != nil {
@@ -1738,7 +1738,7 @@ func (t *Log) MarshalCBOR(w io.Writer) error {
 	}
 
 	if len(t.Message) > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field t.Message was too long")
+		return xerrors.Errorf("Value in field t.Message was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len(t.Message))); err != nil {
@@ -1750,7 +1750,7 @@ func (t *Log) MarshalCBOR(w io.Writer) error {
 
 	// t.Kind (string) (string)
 	if len("Kind") > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field \"Kind\" was too long")
+		return xerrors.Errorf("Value in field \"Kind\" was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len("Kind"))); err != nil {
@@ -1761,7 +1761,7 @@ func (t *Log) MarshalCBOR(w io.Writer) error {
 	}
 
 	if len(t.Kind) > cbg.MaxLength {
-		return xerrors.Errorf("Amount in field t.Kind was too long")
+		return xerrors.Errorf("Value in field t.Kind was too long")
 	}
 
 	if err := cbg.WriteMajorTypeHeaderBuf(scratch, w, cbg.MajTextString, uint64(len(t.Kind))); err != nil {
