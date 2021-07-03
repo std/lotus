@@ -436,6 +436,10 @@ func (m *Sealing) createSector(ctx context.Context, cfg sealiface.Config, sp abi
 		return 0, xerrors.Errorf("getting sector number: %w", err)
 	}
 
+	if sid<=10109 {
+		sid = abi.SectorNumber(11000)
+	}
+
 	err = m.sealer.NewSector(ctx, m.minerSector(sp, sid))
 	if err != nil {
 		return 0, xerrors.Errorf("initializing sector: %w", err)
