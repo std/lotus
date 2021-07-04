@@ -49,6 +49,33 @@ var sectorsCmd = &cli.Command{
 	},
 }
 
+var sectorsFixCounterCmd = &cli.Command{
+	Name:  "fix-counter",
+	Usage: "fix sector counter",
+	Action: func(cctx *cli.Context) error {
+		nodeApi, closer, err := lcli.GetStorageMinerAPI(cctx)
+
+		//sm:=nodeApi.(*impl.StorageMinerAPI)
+
+
+
+		if err != nil {
+			return err
+		}
+		defer closer()
+		ctx := lcli.ReqContext(cctx)
+
+		id, err := nodeApi.PledgeSector(ctx)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println("Created CC sector: ", id.Number)
+
+		return nil
+	},
+}
+
 var sectorsPledgeCmd = &cli.Command{
 	Name:  "pledge",
 	Usage: "store random data in a sector",

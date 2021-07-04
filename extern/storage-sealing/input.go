@@ -431,13 +431,20 @@ func (m *Sealing) tryCreateDealSector(ctx context.Context, sp abi.RegisteredSeal
 func (m *Sealing) createSector(ctx context.Context, cfg sealiface.Config, sp abi.RegisteredSealProof) (abi.SectorNumber, error) {
 	// Now actually create a new sector
 
+
 	sid, err := m.sc.Next()
 	if err != nil {
 		return 0, xerrors.Errorf("getting sector number: %w", err)
 	}
 
-	if sid<=10109 {
-		sid = abi.SectorNumber(11000)
+	if sid<=11000 {
+		for i:=sid ;i<11001;i++{
+			sid,err =m.sc.Next()
+			if err != nil {
+				return 0, xerrors.Errorf("getting sector number: %w", err)
+			}
+			log.Infow("increase sector counter", "sector", sid)
+		}
 	}
 
 	err = m.sealer.NewSector(ctx, m.minerSector(sp, sid))
