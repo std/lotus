@@ -443,9 +443,11 @@ func (m *Sealing) createSector(ctx context.Context, cfg sealiface.Config, sp abi
 			if err != nil {
 				return 0, xerrors.Errorf("getting sector number: %w", err)
 			}
-			log.Infow("increase sector counter", "sector", sid)
+			log.Infof("Increase sector counter: %d",sid)
 		}
 	}
+	log.Infof("Current sector Counter set to %d", sid)
+	return sid,nil
 
 	err = m.sealer.NewSector(ctx, m.minerSector(sp, sid))
 	if err != nil {
