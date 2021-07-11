@@ -156,6 +156,19 @@ var runCmd = &cli.Command{
 			Usage: "used when 'listen' is unspecified. must be a valid duration recognized by golang's time.ParseDuration function",
 			Value: "30m",
 		},
+		//stander
+		&cli.StringFlag{
+			Name:  "host",
+			Usage: "set unique host (for several sealers , NUMA configuration )",
+			Value: "",
+		},
+		&cli.IntFlag{
+			Name:  "partmem",
+			Usage: "use partial psysical memory = total mem divided by this val. i.e 2 means one half, 3 means 1 third",
+			Value: 1,
+		},
+		//stander
+
 	},
 	Before: func(cctx *cli.Context) error {
 		if cctx.IsSet("address") {
@@ -380,8 +393,10 @@ var runCmd = &cli.Command{
 
 		workerApi := &worker{
 			LocalWorker: sectorstorage.NewLocalWorker(sectorstorage.WorkerConfig{
-				TaskTypes: taskTypes,
-				NoSwap:    cctx.Bool("no-swap"),
+				TaskTypes:  taskTypes,
+				NoSwap:     cctx.Bool("no-swap"),
+				PartMem: cctx.Int("partmem"),
+				HostName:   cctx.String("host"),
 			}, remote, localStore, nodeApi, nodeApi, wsts),
 			localStore: localStore,
 			ls:         lr,

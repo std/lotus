@@ -33,6 +33,8 @@ var pathTypes = []storiface.SectorFileType{storiface.FTUnsealed, storiface.FTSea
 type WorkerConfig struct {
 	TaskTypes []sealtasks.TaskType
 	NoSwap    bool
+	PartMem int
+	HostName string
 }
 
 // used do provide custom proofs impl (mostly used in testing)
@@ -54,6 +56,10 @@ type LocalWorker struct {
 	session     uuid.UUID
 	testDisable int64
 	closing     chan struct{}
+
+	//stander
+	HostName string
+	PartMem int
 }
 
 func newLocalWorker(executor ExecutorFunc, wcfg WorkerConfig, store stores.Store, local *stores.Local, sindex stores.SectorIndex, ret storiface.WorkerReturn, cst *statestore.StateStore) *LocalWorker {
@@ -77,6 +83,9 @@ func newLocalWorker(executor ExecutorFunc, wcfg WorkerConfig, store stores.Store
 
 		session: uuid.New(),
 		closing: make(chan struct{}),
+		//stander
+		PartMem: wcfg.PartMem,
+		HostName: wcfg.HostName,
 	}
 
 	if w.executor == nil {
@@ -489,6 +498,12 @@ func (l *LocalWorker) Info(context.Context) (storiface.WorkerInfo, error) {
 	if err != nil {
 		panic(err)
 	}
+
+	//stander
+	if l.HostName!="" {
+		hostname=l.HostName
+	}
+	//stander
 
 	gpus, err := ffi.GetGPUDevices()
 	if err != nil {
