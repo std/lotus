@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -162,10 +163,10 @@ var runCmd = &cli.Command{
 			Usage: "set unique host (for several sealers , NUMA configuration )",
 			Value: "",
 		},
-		&cli.IntFlag{
+		&cli.StringFlag{
 			Name:  "partmem",
-			Usage: "use partial psysical memory = total mem divided by this val. i.e 2 means one half, 3 means 1 third",
-			Value: 1,
+			Usage: "use partial of psysical memory ",
+			Value: "1",
 		},
 		//stander
 
@@ -391,11 +392,15 @@ var runCmd = &cli.Command{
 
 		wsts := statestore.New(namespace.Wrap(ds, modules.WorkerCallsPrefix))
 
+		//stander
+		partmem,err:=strconv.ParseFloat(cctx.String("partmem"),64)
+		if err!=nil {panic ("Error converting partmem param into float32 type")}
+
 		workerApi := &worker{
 			LocalWorker: sectorstorage.NewLocalWorker(sectorstorage.WorkerConfig{
 				TaskTypes:  taskTypes,
 				NoSwap:     cctx.Bool("no-swap"),
-				PartMem: cctx.Int("partmem"),
+				PartMem: partmem,
 				HostName:   cctx.String("host"),
 			}, remote, localStore, nodeApi, nodeApi, wsts),
 			localStore: localStore,

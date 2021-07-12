@@ -33,7 +33,7 @@ var pathTypes = []storiface.SectorFileType{storiface.FTUnsealed, storiface.FTSea
 type WorkerConfig struct {
 	TaskTypes []sealtasks.TaskType
 	NoSwap    bool
-	PartMem int
+	PartMem float64
 	HostName string
 }
 
@@ -59,7 +59,7 @@ type LocalWorker struct {
 
 	//stander
 	HostName string
-	PartMem int
+	PartMem float64
 }
 
 func newLocalWorker(executor ExecutorFunc, wcfg WorkerConfig, store stores.Store, local *stores.Local, sindex stores.SectorIndex, ret storiface.WorkerReturn, cst *statestore.StateStore) *LocalWorker {
@@ -525,8 +525,9 @@ func (l *LocalWorker) Info(context.Context) (storiface.WorkerInfo, error) {
 	if l.HostName!="" {
 		hostname=l.HostName
 	}
-	memTotal:=mem.Total/(uint64(l.PartMem))
-	memReserved:=(mem.VirtualUsed + mem.Total - mem.Available)/(uint64(l.PartMem))
+
+	memTotal:=uint64(float64(mem.Total)*l.PartMem)
+	memReserved:=uint64(float64(mem.VirtualUsed + mem.Total - mem.Available)*l.PartMem)
 	log.Debugf("MemReserved %d partmem reserved %d", mem.VirtualUsed + mem.Total - mem.Available,memReserved)
 	//stander
 
