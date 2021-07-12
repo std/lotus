@@ -528,7 +528,7 @@ func (l *LocalWorker) Info(context.Context) (storiface.WorkerInfo, error) {
 
 	memTotal:=uint64(float64(mem.Total)*l.PartMem)
 	memReserved:=uint64(float64(mem.VirtualUsed + mem.Total - mem.Available)*l.PartMem)
-	log.Debugf("MemReserved %d partmem reserved %d", mem.VirtualUsed + mem.Total - mem.Available,memReserved)
+	log.Debugf("part MemTotal %d partmem reserved %d", memTotal,memReserved)
 	//stander
 
 	return storiface.WorkerInfo{
