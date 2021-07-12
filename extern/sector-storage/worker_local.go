@@ -499,11 +499,7 @@ func (l *LocalWorker) Info(context.Context) (storiface.WorkerInfo, error) {
 		panic(err)
 	}
 
-	//stander
-	if l.HostName!="" {
-		hostname=l.HostName
-	}
-	//stander
+
 
 	gpus, err := ffi.GetGPUDevices()
 	if err != nil {
@@ -525,12 +521,22 @@ func (l *LocalWorker) Info(context.Context) (storiface.WorkerInfo, error) {
 		memSwap = 0
 	}
 
+	//stander
+	if l.HostName!="" {
+		hostname=l.HostName
+	}
+	memTotal:=mem.Total/(uint64(l.PartMem))
+	memReserved:=(mem.VirtualUsed + mem.Total - mem.Available)/(uint64(l.PartMem))
+	//stander
+
 	return storiface.WorkerInfo{
 		Hostname: hostname,
 		Resources: storiface.WorkerResources{
-			MemPhysical: mem.Total,
+			//MemPhysical: mem.Total,
+			MemPhysical: memTotal,
 			MemSwap:     memSwap,
-			MemReserved: mem.VirtualUsed + mem.Total - mem.Available, // TODO: sub this process
+			//MemReserved: mem.VirtualUsed + mem.Total - mem.Available, // TODO: sub this process
+			MemReserved: memReserved,
 			CPUs:        uint64(runtime.NumCPU()),
 			GPUs:        gpus,
 		},
